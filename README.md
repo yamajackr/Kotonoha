@@ -18,4 +18,4 @@ Code licensed under GPL v3 (https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ## Release Information
 
-To release to [AnkiWeb](https://ankiweb.net):  package AutoDefineAddon folder into zip file; upload via [this link](https://ankiweb.net/shared/upload?id=2136497008).
+Kotonoha is not officially released to [AnkiWeb](https://ankiweb.net) yet.
