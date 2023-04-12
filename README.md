@@ -2,7 +2,7 @@ Kotonoha Anki Add-On
 ==========
 <img align="right" src="Kotonoha/images/leaf_green.png" width="372" height="256">
 
-The Anki add-on is a tool that can be used to automatically add pronunciation, definition, and other relevant information to words in the Anki editor. This tool simplifies the process of adding information to flashcards, making it easier for users to create high-quality study materials. With this add-on, users can focus on learning the material rather than spending time looking up definitions and pronunciations.
+Kotonoha is an Anki add-on that can be used to automatically add pronunciation, definition, and other relevant information to words in the Anki editor. This tool simplifies the process of adding information to flashcards, making it easier for users to create high-quality study materials. With this add-on, users can focus on learning the material rather than spending time looking up definitions and pronunciations.
 
 Only tested on Anki 2.1.6.
 
