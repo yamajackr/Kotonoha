@@ -176,7 +176,7 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
                     urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_LEARNERS_API_KEY
         all_learners_entries = get_entries_from_api_j(url=learners_j_url)
         collegiate_j_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/" + \
-                           urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_API_KEY
+                           urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_COLLEGIATE_API_KEY
         all_collegiate_entries = get_entries_from_api_j(url=collegiate_j_url)
         # check if the preferred entry is valid
         check_response_sd2 = all(isinstance(element, dict) for element in all_sd2_entries)
