@@ -48,6 +48,9 @@ TERTIARY_API_KEY = "YOUR_KEY_HERE"
 # Open a browser tab with an image search for the same word?
 OPEN_IMAGES_IN_BROWSER = False
 
+# Add pronunciation
+ADD_PRONUNCIATION = True
+
 # Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
 PRIMARY_DICT = "LEARNERS"
 
@@ -59,12 +62,6 @@ TERTIARY_DICT = ""
 
 # Index of field to insert pronunciations into (use -1 to turn off)
 PRONUNCIATION_FIELD = 0
-
-# Index of field to insert phonetic transcription into (use -1 to turn off)
-PHONETIC_TRANSCRIPTION_FIELD = -1
-
-# Index of field to insert pronunciations into (use -1 to turn off)
-DEDICATED_INDIVIDUAL_BUTTONS = False
 
 PRIMARY_SHORTCUT = "ctrl+alt+f"
 
@@ -78,18 +75,15 @@ FL_ABBREVIATION = {"verb": "v.", "noun": "n.", "adverb": "adv.", "adjective": "a
 
 
 def get_definition(editor,
-                   force_pronounce=False,
+                   add_definition=True,
                    force_definition=False,
-                   force_phonetic_transcription=False,
                    button='primary'):
-    editor.saveNow(lambda: _get_definition(editor, force_pronounce, force_definition,
-                                           force_phonetic_transcription, button))
+    editor.saveNow(lambda: _get_definition(editor, add_definition, force_definition,
+                                            button))
 
 
 def get_definition_force_pronunciation(editor):
     get_definition(editor, force_pronounce=True)
-
-
 
 def get_definition_secondary(editor):
     get_definition(editor, button='secondary')
@@ -102,10 +96,6 @@ def get_definition_force_definition(editor):
 
 def get_definition_medical(editor):
     get_definition(editor, force_definition=True)
-
-
-def get_definition_force_phonetic_transcription(editor):
-    get_definition(editor, force_phonetic_transcription=True)
 
 
 def validate_settings():
@@ -279,7 +269,6 @@ def _abbreviate_fl(fl):
 def _get_definition(editor,
                     force_pronounce=False,
                     force_definition=False,
-                    force_phonetic_transcription=False,
                     button='primary'):
     validate_settings()
     word = _get_word(editor)
@@ -292,7 +281,7 @@ def _get_definition(editor,
     insert_queue = {}
 
     # Add Vocal Pronunciation
-    if (not force_definition and not force_phonetic_transcription and PRONUNCIATION_FIELD > -1) or force_pronounce:
+    if (ADD_PRONUNCIATION or PRONUNCIATION_FIELD > -1):
         # Parse all unique pronunciations, and convert them to URLs as per http://goo.gl/nL0vte
         all_sounds = []
 
@@ -300,22 +289,28 @@ def _get_definition(editor,
             if json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
                 FL = (_abbreviate_fl(e['fl']))
                 for prs in json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
-                    if json_extract_dict(prs, key='ipa'):
-                        phoneme=json_extract_dict(prs, key='ipa')[0]
+                    if (not json_extract_dict(prs, 'ipa') and not json_extract_dict(prs, 'mw')) or not json_extract_dict(prs, 'audio'):
+                        continue
                     else:
-                        phoneme = json_extract_dict(prs, key='mw')[0]
-                    audio = json_extract_dict(prs, key='audio')[0]
-                    if audio[:3] == "bix":
-                        subdir = "bix"
-                    elif audio[:2] == "gg":
-                        subdir = "gg"
-                    elif audio[:1].isdigit():
-                        subdir = "number"
-                    else:
-                        subdir = audio[:1]
-                    mp3_url = 'https://media.merriam-webster.com/audio/prons/en/us/mp3/' + subdir + '/' + \
-                              audio + '.mp3'
-                    all_sounds.append(FL + ' [' + phoneme + '] ' + editor.urlToLink(mp3_url).strip())
+                        if json_extract_dict(prs, key='ipa'):
+                            phoneme=json_extract_dict(prs, key='ipa')[0]
+                        else:
+                            phoneme = json_extract_dict(prs, key='mw')[0]
+                        audio = json_extract_dict(prs, key='audio')[0]
+                        # select audio includes the first 3 letters of the word
+                        # to remove unrelated sound files
+                        if word[:3] in audio:
+                            if audio[:3] == "bix":
+                                subdir = "bix"
+                            elif audio[:2] == "gg":
+                                subdir = "gg"
+                            elif audio[:1].isdigit():
+                                subdir = "number"
+                            else:
+                                subdir = audio[:1]
+                            mp3_url = 'https://media.merriam-webster.com/audio/prons/en/us/mp3/' + subdir + '/' + \
+                                      audio + '.mp3'
+                            all_sounds.append(FL + ' [' + phoneme + '] ' + editor.urlToLink(mp3_url).strip())
             else:
                 continue
         # We want to make this a non-duplicate list, so that we only get unique sound files.
@@ -335,10 +330,10 @@ def _get_definition(editor,
 
     # Add Definition json
     definition_j_list = []
-    if (not force_pronounce and not force_phonetic_transcription and DEFINITION_FIELD > -1) or force_definition:
+    if DEFINITION_FIELD > -1:
         check_response = all(isinstance(element, str) for element in valid_entries_j)
         if check_response:
-            showInfo('Possible words are: '+valid_entries_j)
+            showInfo('Possible words are: '+','.join(valid_entries_j))
             final_list = []
         else:
             for entry in valid_entries_j:
@@ -393,7 +388,7 @@ def _get_definition(editor,
                         for j in range(len(grouped[key][i])):
                             final_list.append(str(i + 1) + '-' + str(j + 1) + '. ' + grouped[key][i][j])
                     else:
-                        final_list.append('e.g. ' + grouped[key][i])
+                        final_list.append('EXAMPLE: ' + grouped[key][i])
 
     for x in final_list:
         _add_to_insert_queue(insert_queue=insert_queue,
@@ -521,14 +516,10 @@ if getattr(mw.addonManager, "getConfig", None):
             JAPANESE_FIELD = extra['JAPANESE_FIELD']
         if 'IGNORE_ARCHAIC' in extra:
             IGNORE_ARCHAIC = extra['IGNORE_ARCHAIC']
-        if 'MERRIAM_WEBSTER_MEDICAL_API_KEY' in extra:
-            MERRIAM_WEBSTER_MEDICAL_API_KEY = extra['MERRIAM_WEBSTER_MEDICAL_API_KEY']
-        if 'MERRIAM_WEBSTER_LEARNERS_API_KEY' in extra:
-            MERRIAM_WEBSTER_LEARNERS_API_KEY = extra['MERRIAM_WEBSTER_LEARNERS_API_KEY']
-        if 'MERRIAM_WEBSTER_ELEMENTARY_API_KEY' in extra:
-            MERRIAM_WEBSTER_ELEMENTARY_API_KEY = extra['MERRIAM_WEBSTER_ELEMENTARY_API_KEY']
         if 'OPEN_IMAGES_IN_BROWSER' in extra:
             OPEN_IMAGES_IN_BROWSER = extra['OPEN_IMAGES_IN_BROWSER']
+        if 'ADD_PRONUNCIATION' in extra:
+            ADD_PRONUNCIATION = extra['ADD_PRONUNCIATION']
         if 'SECONDARY_DICT' in extra:
             SECONDARY_DICT = extra['SECONDARY_DICT']
         if 'SECONDARY_API_KEY' in extra:
@@ -539,8 +530,6 @@ if getattr(mw.addonManager, "getConfig", None):
             TERTIARY_API_KEY = extra['TERTIARY_API_KEY']
         if 'PRONUNCIATION_FIELD' in extra:
             PRONUNCIATION_FIELD = extra['PRONUNCIATION_FIELD']
-        if 'PHONETIC_TRANSCRIPTION_FIELD' in extra:
-            PHONETIC_TRANSCRIPTION_FIELD = extra['PHONETIC_TRANSCRIPTION_FIELD']
 
     if '3 shortcuts' in config:
         shortcuts = config['3 shortcuts']
