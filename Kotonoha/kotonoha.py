@@ -28,7 +28,7 @@ import requests
 # --------------------------------- SETTINGS ---------------------------------
 
 # Get your unique API key by signing up at http://www.dictionaryapi.com/
-MERRIAM_WEBSTER_COLLEGIATE_API_KEY = "YOUR_KEY_HERE"
+PRIMARY_API_KEY = "YOUR_KEY_HERE"
 
 # Index of field to insert definitions into (use -1 to turn off)
 DEFINITION_FIELD = 1
@@ -40,19 +40,22 @@ JAPANESE_FIELD = 1
 IGNORE_ARCHAIC = True
 
 # Get your unique API key by signing up at http://www.dictionaryapi.com/
-MERRIAM_WEBSTER_MEDICAL_API_KEY = "YOUR_KEY_HERE"
+SECONDARY_API_KEY = "YOUR_KEY_HERE"
 
 # Get your unique API key by signing up at http://www.dictionaryapi.com/
-MERRIAM_WEBSTER_LEARNERS_API_KEY = "YOUR_KEY_HERE"
-
-# Get your unique API key by signing up at http://www.dictionaryapi.com/
-MERRIAM_WEBSTER_ELEMENTARY_API_KEY = "YOUR_KEY_HERE"
+TERTIARY_API_KEY = "YOUR_KEY_HERE"
 
 # Open a browser tab with an image search for the same word?
 OPEN_IMAGES_IN_BROWSER = False
 
-# Which dictionary should AutoDefine prefer to get definitions from? Available options are COLLEGIATE and MEDICAL.
-PREFERRED_DICTIONARY = "COLLEGIATE"
+# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+PRIMARY_DICT = "LEARNERS"
+
+# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+SECONDARY_DICT = ""
+
+# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+TERTIARY_DICT = ""
 
 # Index of field to insert pronunciations into (use -1 to turn off)
 PRONUNCIATION_FIELD = 0
@@ -63,13 +66,13 @@ PHONETIC_TRANSCRIPTION_FIELD = -1
 # Index of field to insert pronunciations into (use -1 to turn off)
 DEDICATED_INDIVIDUAL_BUTTONS = False
 
-PRIMARY_SHORTCUT = "ctrl+alt+e"
+PRIMARY_SHORTCUT = "ctrl+alt+f"
 
 SECONDARY_SHORTCUT = "ctrl+alt+s"
 
-JAPANESE_SHORTCUT = "ctrl+alt+j"
+TERTIARY_SHORTCUT = "ctrl+alt+t"
 
-PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT = ""
+JAPANESE_SHORTCUT = "ctrl+alt+j"
 
 FL_ABBREVIATION = {"verb": "v.", "noun": "n.", "adverb": "adv.", "adjective": "adj."}
 
@@ -91,6 +94,9 @@ def get_definition_force_pronunciation(editor):
 def get_definition_secondary(editor):
     get_definition(editor, button='secondary')
 
+def get_definition_tertiary(editor):
+    get_definition(editor, button='tertiary')
+
 def get_definition_force_definition(editor):
     get_definition(editor, force_definition=True)
 
@@ -105,25 +111,18 @@ def get_definition_force_phonetic_transcription(editor):
 def validate_settings():
     # ideally, we wouldn't have to force people to individually register, but the API limit is just 1000 calls/day.
 
-    if PREFERRED_DICTIONARY != "COLLEGIATE" and PREFERRED_DICTIONARY != "MEDICAL":
-        message = "Setting PREFERRED_DICTIONARY must be set to either COLLEGIATE or MEDICAL. Current setting: '%s'" \
-                  % PREFERRED_DICTIONARY
+    if PRIMARY_DICT not in ["COLLEGIATE", "MEDICAL", "LEARNERS", "ELEMENTARY"]:
+        message = "Setting PRIMARY_DICTIONARY must be set to either COLLEGIATE, MEDICAL, LEARNERS, or ELEMENTARY. Current setting: '%s'" \
+                  % PRIMARY_DICT
         showInfo(message)
         return
 
-    if PREFERRED_DICTIONARY == "MEDICAL" and MERRIAM_WEBSTER_MEDICAL_API_KEY == "YOUR_KEY_HERE":
-        message = "The preferred dictionary was set to MEDICAL, but no API key was provided.\n" \
-                  "Please register for one at www.dictionaryapi.com."
-        showInfo(message)
-        webbrowser.open("https://www.dictionaryapi.com/", 0, False)
-        return
-
-    if MERRIAM_WEBSTER_COLLEGIATE_API_KEY == "YOUR_KEY_HERE":
-        message = "Kotonoha requires use of Merriam-Webster's Collegiate Dictionary with Audio API. " \
+    if PRIMARY_API_KEY == "YOUR_KEY_HERE":
+        message = "Kotonoha requires Merriam-Webster's Dictionary with Audio API. " \
                   "To get functionality working:\n" \
                   "1. Go to www.dictionaryapi.com and sign up for an account, requesting access to " \
-                  "the Collegiate dictionary. You may also register for the Medical dictionary.\n" \
-                  "2. In Anki, go to Tools > Add-Ons. Select AutoDefine, click \"Config\" on the right-hand side " \
+                  "the dictionary. \n" \
+                  "2. In Anki, go to Tools > Add-Ons. Select Kotonoha, click \"Config\" on the right-hand side " \
                   "and replace YOUR_KEY_HERE with your unique API key.\n"
         showInfo(message)
         webbrowser.open("https://www.dictionaryapi.com/", 0, False)
@@ -138,77 +137,59 @@ def _focus_zero_field(editor):
     if editor.web:
         editor.web.eval("focusField(%d);" % 0)
 
-def get_preferred_valid_entries(editor, word):
-    collegiate_url = "http://www.dictionaryapi.com/api/v1/references/collegiate/xml/" + \
-                     urllib.parse.quote_plus(word) + "?key=" + MERRIAM_WEBSTER_COLLEGIATE_API_KEY
-    medical_url = "https://www.dictionaryapi.com/api/references/medical/v2/xml/" + \
-                  urllib.parse.quote_plus(word) + "?key=" + MERRIAM_WEBSTER_MEDICAL_API_KEY
-    all_collegiate_entries = get_entries_from_api(word, collegiate_url)
-    all_medical_entries = get_entries_from_api(word, medical_url)
-
-    potential_unified = set()
-    if PREFERRED_DICTIONARY == "COLLEGIATE":
-        entries = filter_entries_lower_and_potential(word, all_collegiate_entries)
-        potential_unified |= entries.potential
-        if not entries.valid:
-            entries = filter_entries_lower_and_potential(word, all_medical_entries)
-            potential_unified |= entries.potential
-    else:
-        entries = filter_entries_lower_and_potential(word, all_medical_entries)
-        potential_unified |= entries.potential
-        if not entries.valid:
-            entries = filter_entries_lower_and_potential(word, all_collegiate_entries)
-            potential_unified |= entries.potential
-
-    if not entries.valid:
-        potential = " Potential matches: " + ", ".join(potential_unified)
-        tooltip("No entry found in Merriam-Webster dictionary for word '%s'.%s" %
-                (word, potential if entries.potential else ""))
-        _focus_zero_field(editor)
-    return entries.valid
-
+def choose_url(word, DICT, API_KEY):
+    if DICT == "LEARNERS":
+        url = "https://www.dictionaryapi.com/api/v3/references/learners/json/" + \
+                    urllib.parse.quote(word) + "?key=" + API_KEY
+        return(url)
+    if DICT == "ELEMENTARY":
+        url = "https://www.dictionaryapi.com/api/v3/references/sd2/json/" + \
+                    urllib.parse.quote(word) + "?key=" + API_KEY
+        return(url)
+    if DICT == "MEDICAL":
+        url = "https://www.dictionaryapi.com/api/v3/references/medical/json/" + \
+                    urllib.parse.quote(word) + "?key=" + API_KEY
+        return(url)
+    if DICT == "COLLEGIATE":
+        url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/" + \
+                    urllib.parse.quote(word) + "?key=" + API_KEY
+        return(url)
 def get_preferred_valid_entries_j(word, valid_dic_name, button):
     if button=='primary':
-        sd2_j_url = "https://www.dictionaryapi.com/api/v3/references/sd2/json/" + \
-                    urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_ELEMENTARY_API_KEY
-        all_sd2_entries = get_entries_from_api_j(url=sd2_j_url)
-        learners_j_url = "https://www.dictionaryapi.com/api/v3/references/learners/json/" + \
-                    urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_LEARNERS_API_KEY
-        all_learners_entries = get_entries_from_api_j(url=learners_j_url)
-        collegiate_j_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/" + \
-                           urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_COLLEGIATE_API_KEY
-        all_collegiate_entries = get_entries_from_api_j(url=collegiate_j_url)
-        # check if the preferred entry is valid
-        check_response_sd2 = all(isinstance(element, dict) for element in all_sd2_entries)
-        check_response_leaners = all(isinstance(element, dict) for element in all_learners_entries)
-        if check_response_sd2:
-            valid_dic_name.append('ELEMENTARY DICTIONARY')
-            return all_sd2_entries
-        elif check_response_leaners:
-            valid_dic_name.append('LEARNERS DICTIONARY')
-            return all_learners_entries
+        DICT = PRIMARY_DICT
+        API_KEY = PRIMARY_API_KEY
+        URL = choose_url(word, DICT, API_KEY)
+        if API_KEY == '':
+            showInfo("PRIMARY_API_KEY is blank. Get the API key")
+            all_entries = []
         else:
-            valid_dic_name.append('COLLEGIATE DICTIONARY')
-            return all_collegiate_entries
+            all_entries = get_entries_from_api_j(url=URL)
+        valid_dic_name.append(DICT)
+        return all_entries
+
     elif button=='secondary':
-        collegiate_j_url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/" + \
-                           urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_COLLEGIATE_API_KEY
-        medical_j_url = "https://www.dictionaryapi.com/api/v3/references/medical/json/" + \
-                      urllib.parse.quote(word) + "?key=" + MERRIAM_WEBSTER_MEDICAL_API_KEY
-        all_collegiate_entries = get_entries_from_api_j(url=collegiate_j_url)
-        all_medical_entries = get_entries_from_api_j(url=medical_j_url)
-        # check if the preferred entry is valid
-        check_response = all(isinstance(element, str) for element in all_medical_entries)
-        if not check_response:
-            valid_dic_name.append('MEDICAL DICTIONARY')
-            return all_medical_entries
+        DICT = SECONDARY_DICT
+        API_KEY = SECONDARY_API_KEY
+        URL = choose_url(word, DICT, API_KEY)
+        if API_KEY == '':
+            showInfo("SECONDARY_API_KEY is blank. Get the API key")
+            all_entries = []
         else:
-            valid_dic_name.append('COLLEGIATE DICTIONARY')
-            return all_collegiate_entries
+            all_entries = get_entries_from_api_j(url=URL)
+        valid_dic_name.append(DICT)
+        return all_entries
 
-
-
-
+    elif button=='tertiary':
+        DICT = TERTIARY_DICT
+        API_KEY = TERTIARY_API_KEY
+        URL = choose_url(word, DICT, API_KEY)
+        if API_KEY == '':
+            showInfo("TERTIARY_API_KEY is blank. Get the API key")
+            all_entries = []
+        else:
+            all_entries = get_entries_from_api_j(url=URL)
+        valid_dic_name.append(DICT)
+        return all_entries
 
 def filter_entries_lower_and_potential(word, all_entries):
     valid_entries = extract_valid_entries(word, all_entries)
@@ -234,39 +215,13 @@ def extract_valid_entries(word, all_entries, lower=False):
                 valid_entries.append(entry)
     return valid_entries
 
-
-def get_entries_from_api(word, url):
-    if "YOUR_KEY_HERE" in url:
-        return []
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:62.0)'
-                                                                 ' Gecko/20100101 Firefox/62.0'})
-        returned = urllib.request.urlopen(req).read()
-        if "Invalid API key" in returned.decode("UTF-8"):
-            showInfo("API key '%s' is invalid. Please double-check you are using the key labeled \"Key (Dictionary)\". "
-                     "A web browser with the web page that lists your keys will open." % url.split("?key=")[1])
-            webbrowser.open("https://www.dictionaryapi.com/account/my-keys.htm")
-            return []
-        if "Results not found" in returned.decode("UTF-8"):
-            return []
-        etree = ET.fromstring(returned)
-        return etree.findall("entry")
-    except URLError:
-        return []
-    except (ET.ParseError, RemoteDisconnected):
-        showInfo("Couldn't parse API response for word '%s'. "
-                 "Please submit an issue to the AutoDefine GitHub (a web browser window will open)." % word)
-        webbrowser.open("https://github.com/z1lc/AutoDefine/issues/new?title=Parse error for word '%s'"
-                        "&body=Anki Version: %s%%0APlatform: %s %s%%0AURL: %s%%0AStack Trace: %s"
-                        % (word, version, platform.system(), platform.release(), url, traceback.format_exc()), 0, False)
-
 def get_entries_from_api_j(url):
     if "YOUR_KEY_HERE" in url:
         return []
     try:
         response = requests.get(url)
         if 'Invalid API key' in response.text:
-            showInfo("API key '%s' is invalid. Please double-check you are using the key labeled \"Key (Dictionary)\". "
+            showInfo("API key '%s' is invalid. Please double-check you are using the pair of key and dictionary. "
                      "A web browser with the web page that lists your keys will open." % url.split("?key=")[1])
             webbrowser.open("https://www.dictionaryapi.com/account/my-keys.htm")
             return []
@@ -383,9 +338,8 @@ def _get_definition(editor,
     if (not force_pronounce and not force_phonetic_transcription and DEFINITION_FIELD > -1) or force_definition:
         check_response = all(isinstance(element, str) for element in valid_entries_j)
         if check_response:
-            final_list = ['Possible words are:']
-            for e in valid_entries_j:
-                final_list.append(e)
+            showInfo('Possible words are: '+valid_entries_j)
+            final_list = []
         else:
             for entry in valid_entries_j:
                 definition = entry['shortdef']
@@ -502,7 +456,7 @@ def setup_buttons(buttons, editor):
     primary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_green.png"),
                                    cmd="AD",
                                    func=get_definition,
-                                   tip="Kotonoha: Elementary, Learner's and Collegiate (%s)" %
+                                   tip="Kotonoha: 1st dictionary (%s)" %
                                        ("no shortcut" if PRIMARY_SHORTCUT == "" else PRIMARY_SHORTCUT),
                                    toggleable=False,
                                    label="",
@@ -511,12 +465,21 @@ def setup_buttons(buttons, editor):
     secondary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_black.png"),
                                      cmd="D",
                                      func=get_definition_secondary,
-                                     tip="Kotonoha: Medical and Collegiate (%s)" %
+                                     tip="Kotonoha: 2nd dictionary (%s)" %
                                          ("no shortcut" if SECONDARY_SHORTCUT == "" else SECONDARY_SHORTCUT),
                                      toggleable=False,
                                      label="",
                                      keys=SECONDARY_SHORTCUT,
                                      disables=False)
+    tertiary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_violet.png"),
+                                       cmd="ə",
+                                       func=get_definition_tertiary,
+                                       tip="Kotonoha: 3rd dictionary (%s)" %
+                                           ("no shortcut" if TERTIARY_SHORTCUT == "" else TERTIARY_SHORTCUT),
+                                       toggleable=False,
+                                       label="",
+                                       keys=TERTIARY_SHORTCUT,
+                                       disables=False)
     japanese_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_red.png"),
                                         cmd="P",
                                         func=search_japanese,
@@ -526,22 +489,13 @@ def setup_buttons(buttons, editor):
                                         label="",
                                         keys=JAPANESE_SHORTCUT,
                                         disables=False)
-    phonetic_transcription_button = editor.addButton(icon="",
-                                                     cmd="ə",
-                                                     func=get_definition_force_phonetic_transcription,
-                                                     tip="AutoDefine: Phonetic Transcription only (%s)" %
-                                                         ("no shortcut"
-                                                          if PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT == ""
-                                                          else PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT),
-                                                     toggleable=False,
-                                                     label="",
-                                                     keys=PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT,
-                                                     disables=False)
+
     buttons.append(primary_button)
-    buttons.append(secondary_button)
+    if not SECONDARY_DICT == '':
+        buttons.append(secondary_button)
+    if not TERTIARY_DICT == '':
+        buttons.append(tertiary_button)
     buttons.append(japanese_button)
-    if DEDICATED_INDIVIDUAL_BUTTONS:
-        buttons.append(phonetic_transcription_button)
     return buttons
 
 
@@ -549,11 +503,13 @@ addHook("setupEditorButtons", setup_buttons)
 
 if getattr(mw.addonManager, "getConfig", None):
     config = mw.addonManager.getConfig(__name__)
-    if '1 required' in config and 'MERRIAM_WEBSTER_COLLEGIATE_API_KEY' in config['1 required']:
-        MERRIAM_WEBSTER_COLLEGIATE_API_KEY = config['1 required']['MERRIAM_WEBSTER_COLLEGIATE_API_KEY']
+
+    if '1 required' in config and all(x in config['1 required'] for x in ['PRIMARY_DICT', 'PRIMARY_API_KEY']):
+        PRIMARY_DICT = config['1 required']['PRIMARY_DICT']
+        PRIMARY_API_KEY = config['1 required']['PRIMARY_API_KEY']
     else:
-        showInfo("AutoDefine: The schema of the configuration has changed in a backwards-incompatible way.\n"
-                 "Please remove and re-download the AutoDefine Add-on.")
+        showInfo("Kotonoha: The schema of the configuration has changed in a backwards-incompatible way.\n"
+                 "Please remove and re-download the Kotonoha Add-on.")
 
     if '2 extra' in config:
         extra = config['2 extra']
@@ -573,8 +529,14 @@ if getattr(mw.addonManager, "getConfig", None):
             MERRIAM_WEBSTER_ELEMENTARY_API_KEY = extra['MERRIAM_WEBSTER_ELEMENTARY_API_KEY']
         if 'OPEN_IMAGES_IN_BROWSER' in extra:
             OPEN_IMAGES_IN_BROWSER = extra['OPEN_IMAGES_IN_BROWSER']
-        if 'PREFERRED_DICTIONARY' in extra:
-            PREFERRED_DICTIONARY = extra['PREFERRED_DICTIONARY']
+        if 'SECONDARY_DICT' in extra:
+            SECONDARY_DICT = extra['SECONDARY_DICT']
+        if 'SECONDARY_API_KEY' in extra:
+            SECONDARY_API_KEY = extra['SECONDARY_API_KEY']
+        if 'TERTIARY_DICT' in extra:
+            TERTIARY_DICT = extra['TERTIARY_DICT']
+        if 'TERTIARY_API_KEY' in extra:
+            TERTIARY_API_KEY = extra['TERTIARY_API_KEY']
         if 'PRONUNCIATION_FIELD' in extra:
             PRONUNCIATION_FIELD = extra['PRONUNCIATION_FIELD']
         if 'PHONETIC_TRANSCRIPTION_FIELD' in extra:
@@ -588,5 +550,5 @@ if getattr(mw.addonManager, "getConfig", None):
             SECONDARY_SHORTCUT = shortcuts['2 SECONDARY_SHORTCUT']
         if '3 JAPANESE_SHORTCUT' in shortcuts:
             JAPANESE_SHORTCUT = shortcuts['3 JAPANESE_SHORTCUT']
-        if '4 PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT' in shortcuts:
-            PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT = shortcuts['4 PHONETIC_TRANSCRIPTION_ONLY_SHORTCUT']
+        if '4 TERTIARY_SHORTCUT' in shortcuts:
+            TERTIARY_SHORTCUT = shortcuts['4 TERTIARY_SHORTCUT']

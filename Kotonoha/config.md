@@ -1,5 +1,4 @@
-* `MERRIAM_WEBSTER_COLLEGIATE_API_KEY`: Get your unique API key by signing up at [dictionaryapi.com](http://www.dictionaryapi.com/)
-* `DEDICATED_INDIVIDUAL_BUTTONS`: Add extra buttons dedicated to just adding the definition and just adding the pronunciation?
+* `PRIMARY_API_KEY`: Get your unique API key by signing up at [dictionaryapi.com](http://www.dictionaryapi.com/)
 * `DEFINITION_FIELD`: Index of field to insert definitions into (use -1 to turn off)
 * `JAPANESE_FIELD`: Index of field to insert Japanese definitions into (use -1 to turn off)
 * `IGNORE_ARCHAIC`: Ignore archaic/obsolete definitions?
