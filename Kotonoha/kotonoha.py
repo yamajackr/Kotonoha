@@ -27,6 +27,9 @@ from .libs import webbrowser
 import requests
 # --------------------------------- SETTINGS ---------------------------------
 
+# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+PRIMARY_DICT = "LEARNERS"
+
 # Get your unique API key by signing up at http://www.dictionaryapi.com/
 PRIMARY_API_KEY = "YOUR_KEY_HERE"
 
@@ -39,29 +42,23 @@ JAPANESE_FIELD = 1
 # Ignore archaic/obsolete definitions?
 IGNORE_ARCHAIC = True
 
-# Get your unique API key by signing up at http://www.dictionaryapi.com/
-SECONDARY_API_KEY = "YOUR_KEY_HERE"
-
-# Get your unique API key by signing up at http://www.dictionaryapi.com/
-TERTIARY_API_KEY = "YOUR_KEY_HERE"
-
 # Open a browser tab with an image search for the same word?
-OPEN_IMAGES_IN_BROWSER = False
+OPEN_IMAGES_IN_BROWSER = True
 
-# Add pronunciation
-ADD_PRONUNCIATION = True
-
-# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
-PRIMARY_DICT = "LEARNERS"
+# Index of field to insert pronunciations into (use -1 to turn off)
+PRONUNCIATION_FIELD = 0
 
 # Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
 SECONDARY_DICT = ""
 
+# Get your unique API key by signing up at http://www.dictionaryapi.com/
+SECONDARY_API_KEY = "YOUR_KEY_HERE"
+
 # Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
 TERTIARY_DICT = ""
 
-# Index of field to insert pronunciations into (use -1 to turn off)
-PRONUNCIATION_FIELD = 0
+# Get your unique API key by signing up at http://www.dictionaryapi.com/
+TERTIARY_API_KEY = "YOUR_KEY_HERE"
 
 PRIMARY_SHORTCUT = "ctrl+alt+f"
 
@@ -281,7 +278,7 @@ def _get_definition(editor,
     insert_queue = {}
 
     # Add Vocal Pronunciation
-    if (ADD_PRONUNCIATION or PRONUNCIATION_FIELD > -1):
+    if PRONUNCIATION_FIELD > -1:
         # Parse all unique pronunciations, and convert them to URLs as per http://goo.gl/nL0vte
         all_sounds = []
 
@@ -518,8 +515,8 @@ if getattr(mw.addonManager, "getConfig", None):
             IGNORE_ARCHAIC = extra['IGNORE_ARCHAIC']
         if 'OPEN_IMAGES_IN_BROWSER' in extra:
             OPEN_IMAGES_IN_BROWSER = extra['OPEN_IMAGES_IN_BROWSER']
-        if 'ADD_PRONUNCIATION' in extra:
-            ADD_PRONUNCIATION = extra['ADD_PRONUNCIATION']
+        if 'PRONUNCIATION_FIELD' in extra:
+            PRONUNCIATION_FIELD = extra['PRONUNCIATION_FIELD']
         if 'SECONDARY_DICT' in extra:
             SECONDARY_DICT = extra['SECONDARY_DICT']
         if 'SECONDARY_API_KEY' in extra:
@@ -528,8 +525,7 @@ if getattr(mw.addonManager, "getConfig", None):
             TERTIARY_DICT = extra['TERTIARY_DICT']
         if 'TERTIARY_API_KEY' in extra:
             TERTIARY_API_KEY = extra['TERTIARY_API_KEY']
-        if 'PRONUNCIATION_FIELD' in extra:
-            PRONUNCIATION_FIELD = extra['PRONUNCIATION_FIELD']
+
 
     if '3 shortcuts' in config:
         shortcuts = config['3 shortcuts']

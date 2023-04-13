@@ -6,20 +6,17 @@
   "2 extra": {
     "DEFINITION_FIELD": 1,
     "JAPANESE_FIELD": 1,
-    "IGNORE_ARCHAIC": true,
+    "OPEN_IMAGES_IN_BROWSER": true,
+    "PRONUNCIATION_FIELD": 0,
     "SECONDARY_DICT": "",
     "SECONDARY_API_KEY": "YOUR_KEY_HERE",
     "TERTIARY_DICT": "",
-    "TERTIARY_API_KEY": "YOUR_KEY_HERE",
-    "OPEN_IMAGES_IN_BROWSER": true,
-    "ADD_PRONUNCIATION": true,
-    "PRONUNCIATION_FIELD": 0,
-    "PHONETIC_TRANSCRIPTION_FIELD": -1
+    "TERTIARY_API_KEY": "YOUR_KEY_HERE"
   },
   "3 shortcuts": {
     "1 PRIMARY_SHORTCUT": "ctrl+alt+f",
     "2 SECONDARY_SHORTCUT": "ctrl+alt+s",
-    "3 JAPANESE_SHORTCUT": "ctrl+alt+j",
-    "4 TERTIARY_SHORTCUT": "ctrl+alt+t"
+    "3 TERTIARY_SHORTCUT": "ctrl+alt+t",
+    "4 JAPANESE_SHORTCUT": "ctrl+alt+j"
   }
 }
