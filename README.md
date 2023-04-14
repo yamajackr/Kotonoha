@@ -8,8 +8,13 @@ Only tested on Anki 2.1.6.
 
 **Note:** This add-on uses Merriam-Webster's Collegiate®, Medical, Learner's, Elementary Dictionary with Audio API to get definitions and pronunciations. This requires you sign up for a Merriam-Webster account and use your own individual API access key. Go to the [Merriam-Webster Dictionary API website](http://www.dictionaryapi.com/), sign up for an account, and request access to the dictionaries. Then, replace **`YOUR_KEY_HERE`** with the key you receive. You can add up to three dictionaries. Also, the add-on references the English-Japanese dictionary provided by [Weblio](https://ejje.weblio.jp/).
 
+## How to use
+First, set up the add-on's configuration settings. This requires entering your primary dictionary and API key for that dictionary. You can also choose to include additional dictionaries if you wish.
+
+Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
+
 ## Acknowledgement
-I would like to express my gratitude to the developer of the Anki add-on [AudoDefine](https://github.com/z1lc/AutoDefine), which inspired the creation of this tool.
+I would like to express my gratitude to the developer of the Anki add-on [AutoDefine](https://github.com/z1lc/AutoDefine), which inspired the creation of this tool.
 
 ## License & Credits
 Icon made by [WordArt](https://wordart.com/)
