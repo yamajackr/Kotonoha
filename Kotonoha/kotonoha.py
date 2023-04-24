@@ -1,8 +1,7 @@
 # Kotonoha Anki Add-on
 # Kotonoha - Automatically add the pronunciation, definition etc. of the word in the editor
 #
-# Copyright (c) 2014 - 2019 Robert Sanek    robertsanek.com    rsanek@gmail.com
-# https://github.com/z1lc/AutoDefine                      Licensed under GPL v2
+# https://github.com/yamamotoryo/Kotonoha                      Licensed under GPL v3
 
 import os
 from collections import namedtuple
@@ -45,38 +44,56 @@ IGNORE_ARCHAIC = True
 # Open a browser tab with an image search for the same word?
 OPEN_IMAGES_IN_BROWSER = True
 
+# Additional word for search in web browser
+ADDITIONAL_SEARCH_WORD = ""
+
 # Index of field to insert pronunciations into (use -1 to turn off)
 PRONUNCIATION_FIELD = 0
 
-# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+# Which dictionary to use for 2nd button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
 SECONDARY_DICT = ""
 
 # Get your unique API key by signing up at http://www.dictionaryapi.com/
 SECONDARY_API_KEY = "YOUR_KEY_HERE"
 
-# Which dictionary to use for 1st button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+# Which dictionary to use for 3rd button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
 TERTIARY_DICT = ""
 
 # Get your unique API key by signing up at http://www.dictionaryapi.com/
 TERTIARY_API_KEY = "YOUR_KEY_HERE"
 
-PRIMARY_SHORTCUT = "ctrl+alt+f"
+# Which dictionary to use for 3rd button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
+QUATERNARY_DICT = ""
 
-SECONDARY_SHORTCUT = "ctrl+alt+s"
+# Get your unique API key by signing up at http://www.dictionaryapi.com/
+QUATERNARY_API_KEY = "YOUR_KEY_HERE"
 
-TERTIARY_SHORTCUT = "ctrl+alt+t"
 
-JAPANESE_SHORTCUT = "ctrl+alt+j"
+# Which dictionary to use for thesaurus button? Available options are COLLEGIATE_THESAURUS, and INTERMEDIATE_THESAURUS.
+THESAURUS_DICT = ""
+
+# Get your unique API key by signing up at http://www.dictionaryapi.com/
+THESAURUS_API_KEY = "YOUR_KEY_HERE"
+
+
+PRIMARY_SHORTCUT = "ctrl+shift+f"
+
+SECONDARY_SHORTCUT = "ctrl+shift+d"
+
+TERTIARY_SHORTCUT = "ctrl+shift+s"
+
+QUATERNARY_SHORTCUT = "ctrl+shift+a"
+
+THESAURUS_SHORTCUT = "ctrl+shift+e"
+
+JAPANESE_SHORTCUT = "ctrl+alt+w"
 
 FL_ABBREVIATION = {"verb": "v.", "noun": "n.", "adverb": "adv.", "adjective": "adj."}
 
 
 def get_definition(editor,
-                   add_definition=True,
-                   force_definition=False,
                    button='primary'):
-    editor.saveNow(lambda: _get_definition(editor, add_definition, force_definition,
-                                            button))
+    editor.saveNow(lambda: _get_definition(editor, button))
 
 
 def get_definition_force_pronunciation(editor):
@@ -88,11 +105,8 @@ def get_definition_secondary(editor):
 def get_definition_tertiary(editor):
     get_definition(editor, button='tertiary')
 
-def get_definition_force_definition(editor):
-    get_definition(editor, force_definition=True)
-
-def get_definition_medical(editor):
-    get_definition(editor, force_definition=True)
+def get_definition_quaternary(editor):
+    get_definition(editor, button='quaternary')
 
 
 def validate_settings():
@@ -141,6 +155,14 @@ def choose_url(word, DICT, API_KEY):
         url = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/" + \
                     urllib.parse.quote(word) + "?key=" + API_KEY
         return(url)
+    if DICT == "COLLEGIATE_THESAURUS":
+        url = "https://www.dictionaryapi.com/api/v3/references/thesaurus/json/" + \
+                    urllib.parse.quote(word) + "?key=" + API_KEY
+        return (url)
+    if DICT == "INTERMEDIATE_THESAURUS":
+        url = "https://www.dictionaryapi.com/api/v3/references/ithesaurus/json/" + \
+                    urllib.parse.quote(word) + "?key=" + API_KEY
+        return(url)
 def get_preferred_valid_entries_j(word, valid_dic_name, button):
     if button=='primary':
         DICT = PRIMARY_DICT
@@ -177,6 +199,30 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
             all_entries = get_entries_from_api_j(url=URL)
         valid_dic_name.append(DICT)
         return all_entries
+    elif button=='quaternary':
+        DICT = QUATERNARY_DICT
+        API_KEY = QUATERNARY_API_KEY
+        URL = choose_url(word, DICT, API_KEY)
+        if API_KEY == '':
+            showInfo("QUATERNARY_API_KEY is blank. Get the API key")
+            all_entries = []
+        else:
+            all_entries = get_entries_from_api_j(url=URL)
+        valid_dic_name.append(DICT)
+        return all_entries
+
+    elif button=='thesaurus':
+        DICT = THESAURUS_DICT
+        API_KEY = THESAURUS_API_KEY
+        URL = choose_url(word, DICT, API_KEY)
+        if API_KEY == '':
+            showInfo("THESAURUS_API_KEY is blank. Get the API key")
+            all_entries = []
+        else:
+            all_entries = get_entries_from_api_j(url=URL)
+        valid_dic_name.append(DICT)
+        return all_entries
+
 
 def filter_entries_lower_and_potential(word, all_entries):
     valid_entries = extract_valid_entries(word, all_entries)
@@ -232,7 +278,14 @@ def _get_word(editor):
             word = maybe_note.fields[0]
 
     word = clean_html(word).strip()
-    return word
+    if str.isascii(word):
+        return word
+    else:
+        showInfo("Kotonoha has detected a word with non-ASCII characters, which it is unable to recognize. \
+        By default, Kotonoha detects all the text in the front note. \
+        When you select a part of the text, Kotonoha searches for its definition. \
+        To avoid errors, ensure that the text you select does not contain any non-ASCII characters.")
+        return ''
 
 # extract value from nested json
 def json_extract_dict(obj, key):
@@ -263,9 +316,54 @@ def _abbreviate_fl(fl):
         fl = FL_ABBREVIATION[fl]
     return fl
 
+def _add_pronunciation(insert_queue, editor, word, valid_entries, PRONUNCIATION_FIELD):
+    all_sounds = []
+    for e in valid_entries:
+        if json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+            if 'fl' in e:
+                FL = (_abbreviate_fl(e['fl']))
+            else:
+                FL = ''
+            for prs in json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                if (not json_extract_dict(prs, 'ipa') and not json_extract_dict(prs, 'mw')) or\
+                        not json_extract_dict(prs,'audio'):
+                    continue
+                else:
+                    if json_extract_dict(prs, key='ipa'):
+                        phoneme = json_extract_dict(prs, key='ipa')[0]
+                    else:
+                        phoneme = json_extract_dict(prs, key='mw')[0]
+                    audio = json_extract_dict(prs, key='audio')[0]
+                    # select audio includes the first 3 letters of the word
+                    # to remove unrelated sound files
+                    if word[:3] in audio:
+                        if audio[:3] == "bix":
+                            subdir = "bix"
+                        elif audio[:2] == "gg":
+                            subdir = "gg"
+                        elif audio[:1].isdigit():
+                                subdir = "number"
+                        else:
+                            subdir = audio[:1]
+                        mp3_url = 'https://media.merriam-webster.com/audio/prons/en/us/mp3/' + subdir + '/' + \
+                                  audio + '.mp3'
+                        all_sounds.append(FL + ' [' + phoneme + '] ' + editor.urlToLink(mp3_url).strip())
+        else:
+            continue
+    # We want to make this a non-duplicate list, so that we only get unique sound files.
+    all_sounds = list(dict.fromkeys(all_sounds))
+    return (all_sounds)
+    final_pronounce_index = PRONUNCIATION_FIELD
+    fields = mw.col.models.fieldNames(editor.note.model())
+    for field in fields:
+        if '🔊' in field:
+            final_pronounce_index = fields.index(field)
+            break
+    to_print = '<br>' + '<br>'.join(all_sounds)
+    _add_to_insert_queue(insert_queue, to_print, final_pronounce_index)
+
+
 def _get_definition(editor,
-                    force_pronounce=False,
-                    force_definition=False,
                     button='primary'):
     validate_settings()
     word = _get_word(editor)
@@ -273,7 +371,7 @@ def _get_definition(editor,
         tooltip("Kotonoha: No text found in note fields.")
         return
     valid_dic_name=[]
-    valid_entries_j = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name,button=button)
+    valid_entries = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name,button=button)
 
     insert_queue = {}
 
@@ -282,9 +380,138 @@ def _get_definition(editor,
         # Parse all unique pronunciations, and convert them to URLs as per http://goo.gl/nL0vte
         all_sounds = []
 
-        for e in valid_entries_j:
+        for e in valid_entries:
             if json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
-                FL = (_abbreviate_fl(e['fl']))
+                if 'fl' in e:
+                    FL = (_abbreviate_fl(e['fl']))
+                else:
+                    FL = ''
+                for prs in json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                    if (not json_extract_dict(prs, 'ipa') and not json_extract_dict(prs, 'mw')) or not json_extract_dict(prs, 'audio'):
+                        continue
+                    else:
+                        if json_extract_dict(prs, key='ipa'):
+                            phoneme=json_extract_dict(prs, key='ipa')[0]
+                        else:
+                            phoneme = json_extract_dict(prs, key='mw')[0]
+                        audio = json_extract_dict(prs, key='audio')[0]
+                        # select audio includes the first 3 letters of the word
+                        # to remove unrelated sound files
+                        if word[:3] in audio:
+                            if audio[:3] == "bix":
+                                subdir = "bix"
+                            elif audio[:2] == "gg":
+                                subdir = "gg"
+                            elif audio[:1].isdigit():
+                                subdir = "number"
+                            else:
+                                subdir = audio[:1]
+                            mp3_url = 'https://media.merriam-webster.com/audio/prons/en/us/mp3/' + subdir + '/' + \
+                                      audio + '.mp3'
+                            all_sounds.append(FL + ' [' + phoneme + '] ' + editor.urlToLink(mp3_url).strip())
+            else:
+                continue
+        # We want to make this a non-duplicate list, so that we only get unique sound files.
+        all_sounds = list(dict.fromkeys(all_sounds))
+
+        final_pronounce_index = PRONUNCIATION_FIELD
+        fields = mw.col.models.fieldNames(editor.note.model())
+        for field in fields:
+            if '🔊' in field:
+                final_pronounce_index = fields.index(field)
+                break
+
+        to_print = '<br>'+'<br>'.join(all_sounds)
+
+        _add_to_insert_queue(insert_queue, to_print, final_pronounce_index)
+    # Add Definition json
+
+    if DEFINITION_FIELD > -1:
+        check_response = all(isinstance(element, str) for element in valid_entries)
+        if check_response:
+            showInfo('Possible words are: '+','.join(valid_entries))
+            def_list = []
+        else:
+            fl_list = []
+            for entry in valid_entries:
+                if 'fl' not in entry:
+                    continue
+                fl = entry['fl']
+                fl_list.append(fl)
+            # unique fl list
+            fl_list = list(set(fl_list))
+            # group by fl
+            grouped = {}
+            for x in fl_list:
+                grouped[x] = []
+            for e in valid_entries:
+                if 'fl' in e:
+                    category=e['fl']
+                    grouped[category].append(e)
+            # add shortdef, example, thesaurus
+            def_list = ['@'+''.join(valid_dic_name)]
+            for FL in fl_list:
+                g = grouped[FL]
+                def_list.append(FL)
+                for i in range(len(g)):
+                    entry = g[i]
+                    if len(json_extract_dict(obj=entry, key='shortdef')) > 0:
+                        for j in range(len(json_extract_dict(obj=entry, key='shortdef')[0])):
+                            shortdef = json_extract_dict(obj=entry, key='shortdef')[0][j]
+                            sseq = json_extract_dict(obj=entry, key='sseq')[0]
+                            if len(sseq)>j:
+                                vis = json_extract_dict(obj=sseq[j], key='t')  # as list
+                            else:
+                                vis=[]
+                            def_list.append(str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
+                            if len(vis) > 0:
+                                def_list.append('(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+
+    for x in def_list:
+        _add_to_insert_queue(insert_queue=insert_queue,
+                             to_print=x,
+                             field_index=DEFINITION_FIELD)
+
+    # Insert each queue into the considered field
+    for field_index in insert_queue.keys():
+        insert_into_field(editor, insert_queue[field_index], field_index)
+
+
+    if OPEN_IMAGES_IN_BROWSER:
+        if not ADDITIONAL_SEARCH_WORD=='':
+            webbrowser.open("https://www.google.com/search?q= " + word + "+" + ADDITIONAL_SEARCH_WORD + "&safe=off&tbm=isch&tbs=isz:lt,islt:xga", 0,
+                            False)
+        else:
+            webbrowser.open("https://www.google.com/search?q= " + word + "&safe=off&tbm=isch&tbs=isz:lt,islt:xga", 0, False)
+
+    _focus_zero_field(editor)
+
+def _get_thesaurus(editor):
+    validate_settings()
+    word = _get_word(editor)
+    if word == "":
+        tooltip("Kotonoha: No text found in note fields.")
+        return
+    valid_dic_name=[]
+    button='thesaurus'
+    valid_entries = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name,button=button)
+    valid_dic_name_sound = []
+    valid_entries_sound = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name_sound,
+                                                        button='primary')
+
+    insert_queue = {}
+
+    # Add Vocal Pronunciation
+    if PRONUNCIATION_FIELD > -1:
+        # Parse all unique pronunciations, and convert them to URLs as per http://goo.gl/nL0vte
+        all_sounds = []
+
+        for e in valid_entries_sound:
+            if json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                if 'fl' in e:
+                    FL = (_abbreviate_fl(e['fl']))
+                else:
+                    FL = ''
                 for prs in json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
                     if (not json_extract_dict(prs, 'ipa') and not json_extract_dict(prs, 'mw')) or not json_extract_dict(prs, 'audio'):
                         continue
@@ -324,70 +551,60 @@ def _get_definition(editor,
 
         _add_to_insert_queue(insert_queue, to_print, final_pronounce_index)
 
+    # Add Thesaurus json
 
-    # Add Definition json
-    definition_j_list = []
     if DEFINITION_FIELD > -1:
-        check_response = all(isinstance(element, str) for element in valid_entries_j)
+        check_response = all(isinstance(element, str) for element in valid_entries)
         if check_response:
-            showInfo('Possible words are: '+','.join(valid_entries_j))
-            final_list = []
+            showInfo('Possible words are: '+','.join(valid_entries))
+            thes_list = []
         else:
-            for entry in valid_entries_j:
-                definition = entry['shortdef']
-                definition_j_list.append(definition)
-
-            # add functional label and definition
             fl_list = []
-            definition_j_list = []
-            for entry in valid_entries_j:
+            for entry in valid_entries:
                 if 'fl' not in entry:
                     continue
                 fl = entry['fl']
                 fl_list.append(fl)
-
-            for entry in valid_entries_j:
-                if 'fl' not in entry:
-                    continue
-                fl = entry['fl']
-                definition_j_list.append(fl)
-                # add short definition
-                if not entry['shortdef']:
-                    continue
-                shortdef = entry['shortdef']
-                definition_j_list.append(shortdef)
-                # add example sentence
-                if not json_extract_dict(entry, 't'):
-                    continue
-                vis = json_extract_dict(entry, 't')
-                definition_j_list.append(re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
-            # unique fl
+            # unique fl list
             fl_list = list(set(fl_list))
             # group by fl
             grouped = {}
             for x in fl_list:
                 grouped[x] = []
-            for i in range(len(definition_j_list)):
-                if definition_j_list[i] in fl_list:
-                    category = definition_j_list[i]
-                    grouped[category].append(definition_j_list[i + 1])
-                    if i + 2 >= len(definition_j_list):
-                        break
-                    else:
-                        if definition_j_list[i + 2] not in fl_list:
-                            grouped[category].append(definition_j_list[i + 2])
+            for e in valid_entries:
+                if 'fl' in e:
+                    category=e['fl']
+                    grouped[category].append(e)
+            # add shortdef, example, thesaurus
+            thes_list = ['@'+''.join(valid_dic_name)]
+            for FL in fl_list:
+                g = grouped[FL]
+                thes_list.append(FL)
+                for i in range(len(g)):
+                    entry = g[i]
+                    if len(json_extract_dict(obj=entry, key='shortdef')) > 0:
+                        for j in range(len(json_extract_dict(obj=entry, key='shortdef')[0])):
+                            shortdef = json_extract_dict(obj=entry, key='shortdef')[0][j]
+                            sseq = json_extract_dict(obj=entry, key='sseq')[0]
+                            if len(sseq)>0:
+                                vis = json_extract_dict(obj=sseq[j], key='t')  # as list
+                                syn_list = json_extract_dict(obj=json_extract_dict(obj=sseq[j], key='syn_list'),
+                                                             key='wd')  # as list
+                                ant_list = json_extract_dict(obj=json_extract_dict(obj=sseq[j], key='ant_list'),
+                                                             key='wd')  # as list
+                            else:
+                                vis=[]
+                                syn_list=[]
+                                ant_list=[]
+                            thes_list.append(str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
+                            if len(vis) > 0:
+                                thes_list.append('(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+                            if len(syn_list) > 0:
+                                thes_list.append('(Synonym) ' + ', '.join(syn_list))
+                            if len(ant_list) > 0:
+                                thes_list.append('(Antonym) ' + ', '.join(ant_list))
 
-            final_list = [''.join(valid_dic_name)]
-            for key in grouped.keys():
-                final_list.append(key)
-                for i in range(len(grouped[key])):
-                    if isinstance(grouped[key][i], list):
-                        for j in range(len(grouped[key][i])):
-                            final_list.append(str(i + 1) + '-' + str(j + 1) + '. ' + grouped[key][i][j])
-                    else:
-                        final_list.append('EXAMPLE: ' + grouped[key][i])
-
-    for x in final_list:
+    for x in thes_list:
         _add_to_insert_queue(insert_queue=insert_queue,
                              to_print=x,
                              field_index=DEFINITION_FIELD)
@@ -400,6 +617,7 @@ def _get_definition(editor,
         webbrowser.open("https://www.google.com/search?q= " + word + "&safe=off&tbm=isch&tbs=isz:lt,islt:xga", 0, False)
 
     _focus_zero_field(editor)
+
 
 def _search_japanese(editor,japanese_field_index=JAPANESE_FIELD):
     validate_settings()
@@ -418,6 +636,10 @@ def _search_japanese(editor,japanese_field_index=JAPANESE_FIELD):
 
 def search_japanese(editor, japanese_field_index=JAPANESE_FIELD):
     editor.saveNow(lambda: _search_japanese(editor, japanese_field_index))
+
+def get_thesaurus(editor):
+    editor.saveNow(lambda: _get_thesaurus(editor))
+
 
 def _add_to_insert_queue(insert_queue, to_print, field_index):
     if field_index not in insert_queue.keys():
@@ -448,30 +670,40 @@ def setup_buttons(buttons, editor):
     primary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_green.png"),
                                    cmd="AD",
                                    func=get_definition,
-                                   tip="Kotonoha: 1st dictionary (%s)" %
-                                       ("no shortcut" if PRIMARY_SHORTCUT == "" else PRIMARY_SHORTCUT),
+                                   tip="Kotonoha: %s dictionary (%s)" %
+                                       (PRIMARY_DICT,"no shortcut" if PRIMARY_SHORTCUT == "" else PRIMARY_SHORTCUT),
                                    toggleable=False,
                                    label="",
                                    keys=PRIMARY_SHORTCUT,
                                    disables=False)
-    secondary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_black.png"),
+    secondary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_pink.png"),
                                      cmd="D",
                                      func=get_definition_secondary,
-                                     tip="Kotonoha: 2nd dictionary (%s)" %
-                                         ("no shortcut" if SECONDARY_SHORTCUT == "" else SECONDARY_SHORTCUT),
+                                     tip="Kotonoha: %s dictionary (%s)" %
+                                         (SECONDARY_DICT,"no shortcut" if SECONDARY_SHORTCUT == "" else SECONDARY_SHORTCUT),
                                      toggleable=False,
                                      label="",
                                      keys=SECONDARY_SHORTCUT,
                                      disables=False)
     tertiary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_violet.png"),
-                                       cmd="ə",
+                                       cmd="S",
                                        func=get_definition_tertiary,
-                                       tip="Kotonoha: 3rd dictionary (%s)" %
-                                           ("no shortcut" if TERTIARY_SHORTCUT == "" else TERTIARY_SHORTCUT),
+                                       tip="Kotonoha: %s dictionary (%s)" %
+                                           (TERTIARY_DICT,"no shortcut" if TERTIARY_SHORTCUT == "" else TERTIARY_SHORTCUT),
                                        toggleable=False,
                                        label="",
                                        keys=TERTIARY_SHORTCUT,
                                        disables=False)
+    quaternary_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_black.png"),
+                                       cmd="Q",
+                                       func=get_definition_quaternary,
+                                       tip="Kotonoha: %s dictionary (%s)" %
+                                           (QUATERNARY_DICT,"no shortcut" if QUATERNARY_SHORTCUT == "" else QUATERNARY_SHORTCUT),
+                                       toggleable=False,
+                                       label="",
+                                       keys=QUATERNARY_SHORTCUT,
+                                       disables=False)
+
     japanese_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_red.png"),
                                         cmd="P",
                                         func=search_japanese,
@@ -481,12 +713,25 @@ def setup_buttons(buttons, editor):
                                         label="",
                                         keys=JAPANESE_SHORTCUT,
                                         disables=False)
+    thesaurus_button = editor.addButton(icon=os.path.join(os.path.dirname(__file__), "images", "leaf_emerald.png"),
+                                       cmd="T",
+                                       func=get_thesaurus,
+                                       tip="Kotonoha: %s dictionary (%s)" %
+                                           (THESAURUS_DICT,"no shortcut" if THESAURUS_SHORTCUT == "" else THESAURUS_SHORTCUT),
+                                       toggleable=False,
+                                       label="",
+                                       keys=THESAURUS_SHORTCUT,
+                                       disables=False)
 
     buttons.append(primary_button)
     if not SECONDARY_DICT == '':
         buttons.append(secondary_button)
     if not TERTIARY_DICT == '':
         buttons.append(tertiary_button)
+    if not QUATERNARY_DICT == '':
+        buttons.append(quaternary_button)
+    if not THESAURUS_DICT == '':
+        buttons.append(thesaurus_button)
     buttons.append(japanese_button)
     return buttons
 
@@ -505,8 +750,6 @@ if getattr(mw.addonManager, "getConfig", None):
 
     if '2 extra' in config:
         extra = config['2 extra']
-        if 'DEDICATED_INDIVIDUAL_BUTTONS' in extra:
-            DEDICATED_INDIVIDUAL_BUTTONS = extra['DEDICATED_INDIVIDUAL_BUTTONS']
         if 'DEFINITION_FIELD' in extra:
             DEFINITION_FIELD = extra['DEFINITION_FIELD']
         if 'JAPANESE_FIELD' in extra:
@@ -515,6 +758,8 @@ if getattr(mw.addonManager, "getConfig", None):
             IGNORE_ARCHAIC = extra['IGNORE_ARCHAIC']
         if 'OPEN_IMAGES_IN_BROWSER' in extra:
             OPEN_IMAGES_IN_BROWSER = extra['OPEN_IMAGES_IN_BROWSER']
+        if 'ADDITIONAL_SEARCH_WORD' in extra:
+            ADDITIONAL_SEARCH_WORD = extra['ADDITIONAL_SEARCH_WORD']
         if 'PRONUNCIATION_FIELD' in extra:
             PRONUNCIATION_FIELD = extra['PRONUNCIATION_FIELD']
         if 'SECONDARY_DICT' in extra:
@@ -525,6 +770,14 @@ if getattr(mw.addonManager, "getConfig", None):
             TERTIARY_DICT = extra['TERTIARY_DICT']
         if 'TERTIARY_API_KEY' in extra:
             TERTIARY_API_KEY = extra['TERTIARY_API_KEY']
+        if 'QUATERNARY_DICT' in extra:
+            QUATERNARY_DICT = extra['QUATERNARY_DICT']
+        if 'QUATERNARY_API_KEY' in extra:
+            QUATERNARY_API_KEY = extra['QUATERNARY_API_KEY']
+        if 'THESAURUS_DICT' in extra:
+            THESAURUS_DICT = extra['THESAURUS_DICT']
+        if 'THESAURUS_API_KEY' in extra:
+            THESAURUS_API_KEY = extra['THESAURUS_API_KEY']
 
 
     if '3 shortcuts' in config:
@@ -533,7 +786,11 @@ if getattr(mw.addonManager, "getConfig", None):
             PRIMARY_SHORTCUT = shortcuts['1 PRIMARY_SHORTCUT']
         if '2 SECONDARY_SHORTCUT' in shortcuts:
             SECONDARY_SHORTCUT = shortcuts['2 SECONDARY_SHORTCUT']
-        if '3 JAPANESE_SHORTCUT' in shortcuts:
-            JAPANESE_SHORTCUT = shortcuts['3 JAPANESE_SHORTCUT']
-        if '4 TERTIARY_SHORTCUT' in shortcuts:
-            TERTIARY_SHORTCUT = shortcuts['4 TERTIARY_SHORTCUT']
+        if '3 TERTIARY_SHORTCUT' in shortcuts:
+            TERTIARY_SHORTCUT = shortcuts['3 TERTIARY_SHORTCUT']
+        if '4 QUATERNARY_SHORTCUT' in shortcuts:
+            QUATERNARY_SHORTCUT = shortcuts['4 QUATERNARY_SHORTCUT']
+        if '5 THESAURUS_SHORTCUT' in shortcuts:
+            THESAURUS_SHORTCUT = shortcuts['5 THESAURUS_SHORTCUT']
+        if '6 JAPANESE_SHORTCUT' in shortcuts:
+            JAPANESE_SHORTCUT = shortcuts['6 JAPANESE_SHORTCUT']
