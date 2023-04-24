@@ -13,7 +13,9 @@ First, set up the add-on's configuration settings. This requires entering your p
 
 Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
 
-[How to use Kotonoha](https://www.youtube.com/watch?v=YEG3kYFnLKk "How to use Kotonoha")
+[How to use Kotonoha 1](https://youtu.be/SCxYdC3GtGs "How to use Kotonoha")
+
+[How to use Kotonoha 2](https://www.youtube.com/watch?v=YEG3kYFnLKk "How to use Kotonoha")
 
 
 ## Acknowledgement
