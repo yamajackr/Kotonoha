@@ -11,13 +11,18 @@ Tested on Anki 2.1.47, 2.1.52, and 2.1.60 (doesn't work <= 2.1.44)
 ## How to use
 First, set up the add-on's configuration settings. This requires entering your primary dictionary and API key for that dictionary. You can also choose to include additional dictionaries if you wish.
 
+
+<img align="right" src="Kotonoha/images/Kotonoha_sample1.png" width="372" height="480">
+
 Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
 
-<img align="right" src="Kotonoha/images/leaf_green.png" width="372" height="256">
+**Note:**
+If you're using Kotonoha, you can format your word definitions, example sentences, and synonyms in a box using CSS styling. To achieve a card format like the one shown in the image on the right, navigate to **`Add -> Cards... -> Template and Styling.`** For reference, I keep my template example in the Kotonoha directory.
+
 
 [How to use Kotonoha 1](https://youtu.be/SCxYdC3GtGs "How to use Kotonoha")
 
-[How to use Kotonoha 2](https://www.youtube.com/watch?v=YEG3kYFnLKk "How to use Kotonoha")
+[How to use Kotonoha for Medicine](https://www.youtube.com/watch?v=YEG3kYFnLKk "How to use Kotonoha")
 
 
 ## Acknowledgement
