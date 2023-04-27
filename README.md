@@ -12,7 +12,7 @@ Tested on Anki 2.1.47, 2.1.52, and 2.1.60 (doesn't work <= 2.1.44)
 First, set up the add-on's configuration settings. This requires entering your primary dictionary and API key for that dictionary. You can also choose to include additional dictionaries if you wish.
 
 
-<img align="right" src="Kotonoha/images/Kotonoha_sample1.png" width="372" height="480">
+<img align="right" src="Kotonoha/images/Kotonoha_sample2.png" width="372" height="372">
 
 Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
 
