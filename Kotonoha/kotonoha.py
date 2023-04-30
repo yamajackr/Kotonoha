@@ -17,9 +17,8 @@ from anki import version
 from anki.hooks import addHook
 from aqt import mw
 from aqt.utils import showInfo, tooltip
-from http.client import RemoteDisconnected
+
 from urllib.error import URLError
-from xml.etree import ElementTree as ET
 
 from .libs import webbrowser
 
@@ -38,6 +37,7 @@ DEFINITION_FIELD = 1
 # Index of field to insert Japanese into (use -1 to turn off)
 JAPANESE_FIELD = 1
 
+
 # Ignore archaic/obsolete definitions?
 IGNORE_ARCHAIC = True
 
@@ -49,6 +49,14 @@ ADDITIONAL_SEARCH_WORD = ""
 
 # Index of field to insert pronunciations into (use -1 to turn off)
 PRONUNCIATION_FIELD = 0
+
+# Index of field to insert artwork into (use -1 to turn off)
+ART_FIELD = 1
+
+# Do you want to put elements in box?
+# If the value is True, then the 'def_box', 'vis_box', 'syn_box', 'ant_box', and 'jap_box' should
+# be formatted using the styling options provided in the cards template.
+BOX_FORMAT = False
 
 # Which dictionary to use for 2nd button? Available options are COLLEGIATE, LEARNERS, ELEMENTARY and MEDICAL.
 SECONDARY_DICT = ""
@@ -172,7 +180,7 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
             showInfo("PRIMARY_API_KEY is blank. Get the API key")
             all_entries = []
         else:
-            all_entries = get_entries_from_api_j(url=URL)
+            all_entries = get_entries_from_api_j(url=URL, word=word)
         valid_dic_name.append(DICT)
         return all_entries
 
@@ -184,7 +192,7 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
             showInfo("SECONDARY_API_KEY is blank. Get the API key")
             all_entries = []
         else:
-            all_entries = get_entries_from_api_j(url=URL)
+            all_entries = get_entries_from_api_j(url=URL, word=word)
         valid_dic_name.append(DICT)
         return all_entries
 
@@ -196,7 +204,7 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
             showInfo("TERTIARY_API_KEY is blank. Get the API key")
             all_entries = []
         else:
-            all_entries = get_entries_from_api_j(url=URL)
+            all_entries = get_entries_from_api_j(url=URL, word=word)
         valid_dic_name.append(DICT)
         return all_entries
     elif button=='quaternary':
@@ -207,7 +215,7 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
             showInfo("QUATERNARY_API_KEY is blank. Get the API key")
             all_entries = []
         else:
-            all_entries = get_entries_from_api_j(url=URL)
+            all_entries = get_entries_from_api_j(url=URL, word=word)
         valid_dic_name.append(DICT)
         return all_entries
 
@@ -219,7 +227,7 @@ def get_preferred_valid_entries_j(word, valid_dic_name, button):
             showInfo("THESAURUS_API_KEY is blank. Get the API key")
             all_entries = []
         else:
-            all_entries = get_entries_from_api_j(url=URL)
+            all_entries = get_entries_from_api_j(url=URL, word=word)
         valid_dic_name.append(DICT)
         return all_entries
 
@@ -248,7 +256,7 @@ def extract_valid_entries(word, all_entries, lower=False):
                 valid_entries.append(entry)
     return valid_entries
 
-def get_entries_from_api_j(url):
+def get_entries_from_api_j(url, word):
     if "YOUR_KEY_HERE" in url:
         return []
     try:
@@ -260,8 +268,18 @@ def get_entries_from_api_j(url):
             return []
         else:
             # Extract the JSON data from the response
-            json_data = response.json()
-            return json_data
+            potential_entries = response.json()
+            # check response
+            check_response = all(isinstance(element, str) for element in potential_entries)
+            if check_response:
+                valid_entries = potential_entries
+            else:
+                valid_entries = []
+                for e in potential_entries:
+                    Id = json_extract_dict(obj=e, key='id')
+                    if word==''.join(Id) or re.search(pattern=word+':', string=''.join(Id)):
+                        valid_entries.append(e)
+            return valid_entries
     except URLError:
         return []
 
@@ -276,7 +294,8 @@ def _get_word(editor):
         maybe_note = editor.note
         if maybe_note:
             word = maybe_note.fields[0]
-
+    # use the first line
+    word = word.split('<br>')[0]
     word = clean_html(word).strip()
     if str.isascii(word):
         return word
@@ -421,9 +440,9 @@ def _get_definition(editor,
                 final_pronounce_index = fields.index(field)
                 break
 
-        to_print = '<br>'+'<br>'.join(all_sounds)
-
-        _add_to_insert_queue(insert_queue, to_print, final_pronounce_index)
+        if len(all_sounds)>0:
+            to_print = '<br>'+'<br>'.join(all_sounds)
+            _add_to_insert_queue(insert_queue, to_print, final_pronounce_index)
     # Add Definition json
 
     if DEFINITION_FIELD > -1:
@@ -432,6 +451,7 @@ def _get_definition(editor,
             showInfo('Possible words are: '+','.join(valid_entries))
             def_list = []
         else:
+
             fl_list = []
             for entry in valid_entries:
                 if 'fl' not in entry:
@@ -448,33 +468,109 @@ def _get_definition(editor,
                 if 'fl' in e:
                     category=e['fl']
                     grouped[category].append(e)
+
+            # add inflection
+            dic_list=[]
+            for e in valid_entries:
+                if 'ins' in e:
+                    category = (_abbreviate_fl(e['fl']))
+                    dic_list.append(category+'inf: ' + ', '.join(json_extract_dict(obj=e, key='if')))
+            # add cross-references
+            for e in valid_entries:
+                if 'cxs' in e:
+                    dic_list.append(json_extract_dict(obj=e, key='cxl')[0] + ' ' + json_extract_dict(obj=e, key='cxt')[0])
+            dic_list=list(set(dic_list))
+            Dic_html = '<div class ="dic_box" >' + \
+                       '<span class ="box-title">' + '@' + ''.join(valid_dic_name) + '</span>' + \
+                       '<p>' + '<br>'.join(dic_list) + '</p>' + \
+                       '</div>'
+            def_list = [Dic_html]
             # add shortdef, example, thesaurus
-            def_list = ['@'+''.join(valid_dic_name)]
             for FL in fl_list:
                 g = grouped[FL]
-                def_list.append(FL)
                 for i in range(len(g)):
                     entry = g[i]
                     if len(json_extract_dict(obj=entry, key='shortdef')) > 0:
                         for j in range(len(json_extract_dict(obj=entry, key='shortdef')[0])):
                             shortdef = json_extract_dict(obj=entry, key='shortdef')[0][j]
                             sseq = json_extract_dict(obj=entry, key='sseq')[0]
-                            if len(sseq)>j:
+                            if len(sseq) > j:
                                 vis = json_extract_dict(obj=sseq[j], key='t')  # as list
                             else:
-                                vis=[]
-                            def_list.append(str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
-                            if len(vis) > 0:
-                                def_list.append('(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+                                vis = []
 
-    for x in def_list:
-        _add_to_insert_queue(insert_queue=insert_queue,
-                             to_print=x,
-                             field_index=DEFINITION_FIELD)
+                            if BOX_FORMAT:
+                                if len(vis) > 0:
+                                    txt = re.sub("\{..\}", "<span class=\"text_highlight\">", vis[0])
+                                    Vis = re.sub("\{...\}", "</span>",txt)
+                                    Vis_html = '<div class ="vis_box" >' + \
+                                               '<span class ="box-title"> Example </span>' + \
+                                               '<p>' + Vis + '</p>' + \
+                                               '</div>'
+                                else:
+                                    Vis_html=''
+
+
+                                Def_html = '<div class ="def_box" >' + \
+                                           '<span class ="box-title">' + FL + ' ' + str(i + 1) + '-' + str(
+                                    j + 1) + '</span>' + \
+                                           '<p>' + shortdef + '</p>' + \
+                                           '</div>' + \
+                                           Vis_html
+
+                                def_list.append(Def_html)
+
+                            else:
+                                def_list.append(FL + ' ' + str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
+                                if len(vis) > 0:
+                                    def_list.append(
+                                        '(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+                        if BOX_FORMAT:
+                            Syns = json_extract_dict(obj=json_extract_dict(obj=entry, key='syns'),
+                                                     key='pt')  # as list
+                            Ants = json_extract_dict(obj=json_extract_dict(obj=entry, key='ants'),
+                                                     key='pt')  # as list
+                            if len(Syns) > 0:
+                                Syn = Syns[0][0][1].split('.')[0].strip().replace("{sc}",
+                                                                                  "<span class=\"text_highlight\">").replace(
+                                    "{/sc}", "</span>,")
+                                Syn_html = '<div class ="syn_box" >' + \
+                                           '<span class ="box-title"> Synonym </span>' + \
+                                           '<p>' + Syn + '</p>' + \
+                                           '</div>'
+                            else:
+                                Syn_html = ''
+                            def_list.append(Syn_html)
+                        else:
+                            if len(Syns) > 0:
+                                Syn = Syns[0][0][1].split('.')[0].strip()
+                                def_list.append(Syn)
+
+
+        for x in def_list:
+            _add_to_insert_queue(insert_queue=insert_queue,
+                                 to_print=x,
+                                 field_index=DEFINITION_FIELD)
+
+        # Add artwork
+    if ART_FIELD > -1:
+        art_list = []
+        for e in valid_entries:
+            if 'art' in e:
+                artid = ''.join(json_extract_dict(obj=e, key='artid'))
+                art_url = 'https://www.merriam-webster.com/assets/mw/static/art/dict/' + artid + '.gif'
+                art_list.append(editor.urlToLink(art_url).strip())
+                capt = json_extract_dict(obj=valid_entries, key='capt')[0].split(":")[1].strip()
+                art_list.append(re.sub(pattern=r"{[^}]*}", repl='', string=capt))
+        for x in art_list:
+            _add_to_insert_queue(insert_queue=insert_queue,
+                                 to_print=x,
+                                 field_index=ART_FIELD)
 
     # Insert each queue into the considered field
     for field_index in insert_queue.keys():
         insert_into_field(editor, insert_queue[field_index], field_index)
+
 
 
     if OPEN_IMAGES_IN_BROWSER:
@@ -557,7 +653,7 @@ def _get_thesaurus(editor):
         check_response = all(isinstance(element, str) for element in valid_entries)
         if check_response:
             showInfo('Possible words are: '+','.join(valid_entries))
-            thes_list = []
+            def_list = []
         else:
             fl_list = []
             for entry in valid_entries:
@@ -575,18 +671,32 @@ def _get_thesaurus(editor):
                 if 'fl' in e:
                     category=e['fl']
                     grouped[category].append(e)
+            # get Dictionary, inflection, cross-references
+            dic_list=[]
+            for e in valid_entries:
+                if 'ins' in e:
+                    category = (_abbreviate_fl(e['fl']))
+                    dic_list.append(category+'inf: ' + ', '.join(json_extract_dict(obj=e, key='if')))
+            # add cross-references
+            for e in valid_entries:
+                if 'cxs' in e:
+                    dic_list.append(json_extract_dict(obj=e, key='cxl')[0] + ' ' + json_extract_dict(obj=e, key='cxt')[0])
+            dic_list = list(set(dic_list))
+            Dic_html = '<div class ="dic_box" >' + \
+                       '<span class ="box-title">' + '@' + ''.join(valid_dic_name) + '</span>' + \
+                       '<p>' + '<br>'.join(dic_list) + '</p>' + \
+                       '</div>'
+            def_list = [Dic_html]
             # add shortdef, example, thesaurus
-            thes_list = ['@'+''.join(valid_dic_name)]
             for FL in fl_list:
                 g = grouped[FL]
-                thes_list.append(FL)
                 for i in range(len(g)):
                     entry = g[i]
                     if len(json_extract_dict(obj=entry, key='shortdef')) > 0:
                         for j in range(len(json_extract_dict(obj=entry, key='shortdef')[0])):
                             shortdef = json_extract_dict(obj=entry, key='shortdef')[0][j]
                             sseq = json_extract_dict(obj=entry, key='sseq')[0]
-                            if len(sseq)>0:
+                            if len(sseq)>j:
                                 vis = json_extract_dict(obj=sseq[j], key='t')  # as list
                                 syn_list = json_extract_dict(obj=json_extract_dict(obj=sseq[j], key='syn_list'),
                                                              key='wd')  # as list
@@ -596,15 +706,52 @@ def _get_thesaurus(editor):
                                 vis=[]
                                 syn_list=[]
                                 ant_list=[]
-                            thes_list.append(str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
-                            if len(vis) > 0:
-                                thes_list.append('(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
-                            if len(syn_list) > 0:
-                                thes_list.append('(Synonym) ' + ', '.join(syn_list))
-                            if len(ant_list) > 0:
-                                thes_list.append('(Antonym) ' + ', '.join(ant_list))
+                            if BOX_FORMAT:
+                                if len(vis) > 0:
+                                    txt = re.sub("\{..\}", "<span class=\"text_highlight\">", vis[0])
+                                    Vis = re.sub("\{...\}", "</span>",txt)
+                                    Vis_html='<div class ="vis_box" >' +\
+                                             '<span class ="box-title"> Example </span>' +\
+                                             '<p>'+ Vis + '</p>' +\
+                                             '</div>'
 
-    for x in thes_list:
+                                if len(syn_list) > 0:
+                                    Syn=', '.join(syn_list)
+                                    Syn_html='<div class ="syn_box" >' +\
+                                             '<span class ="box-title"> Synonym </span>' +\
+                                             '<p>'+ Syn + '</p>' +\
+                                             '</div>'
+                                else:
+                                    Syn_html = ''
+                                if len(ant_list) > 0:
+                                    Ant = ', '.join(ant_list)
+                                    Ant_html='<div class ="ant_box" >' +\
+                                             '<span class ="box-title"> Antonym </span>' +\
+                                             '<p>'+ Ant + '</p>' +\
+                                             '</div>'
+                                else:
+                                    Ant_html=''
+                                Def_html = '<div class ="def_box" >' + \
+                                           '<span class ="box-title">'+ FL+' '+str(i + 1) + '-' + str(j + 1) +'</span>' + \
+                                           '<p>' + shortdef + '</p>' + \
+                                           '</div>' + \
+                                           Vis_html + \
+                                           Syn_html + \
+                                           Ant_html
+
+                                def_list.append(Def_html)
+
+                            else:
+                                def_list.append(FL+' '+str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
+                                if len(vis) > 0:
+                                    def_list.append('(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+                                if len(syn_list) > 0:
+                                    def_list.append('(Synonym) ' + ', '.join(syn_list))
+                                if len(ant_list) > 0:
+                                    def_list.append('(Antonym) ' + ', '.join(ant_list))
+
+
+    for x in def_list:
         _add_to_insert_queue(insert_queue=insert_queue,
                              to_print=x,
                              field_index=DEFINITION_FIELD)
@@ -631,8 +778,12 @@ def _search_japanese(editor,japanese_field_index=JAPANESE_FIELD):
         tooltip("No Japanese definition was found. Check the word!")
         return
     else:
-        japanese='<br>'+soup.find(class_='content-explanation ej').get_text().strip()
-        insert_into_field(editor, japanese, japanese_field_index)
+        japanese=soup.find(class_='content-explanation ej').get_text().strip()
+        Jap_html = '<div class ="jap_box" >' + \
+                   '<span class ="box-title"> Japanese </span>' + \
+                   '<p>' + japanese + '</p>' + \
+                   '</div>'
+        insert_into_field(editor, Jap_html, japanese_field_index)
 
 def search_japanese(editor, japanese_field_index=JAPANESE_FIELD):
     editor.saveNow(lambda: _search_japanese(editor, japanese_field_index))
@@ -762,6 +913,10 @@ if getattr(mw.addonManager, "getConfig", None):
             ADDITIONAL_SEARCH_WORD = extra['ADDITIONAL_SEARCH_WORD']
         if 'PRONUNCIATION_FIELD' in extra:
             PRONUNCIATION_FIELD = extra['PRONUNCIATION_FIELD']
+        if 'ART_FIELD' in extra:
+            ART_FIELD = extra['ART_FIELD']
+        if 'BOX_FORMAT' in extra:
+            BOX_FORMAT = extra['BOX_FORMAT']
         if 'SECONDARY_DICT' in extra:
             SECONDARY_DICT = extra['SECONDARY_DICT']
         if 'SECONDARY_API_KEY' in extra:
@@ -794,3 +949,389 @@ if getattr(mw.addonManager, "getConfig", None):
             THESAURUS_SHORTCUT = shortcuts['5 THESAURUS_SHORTCUT']
         if '6 JAPANESE_SHORTCUT' in shortcuts:
             JAPANESE_SHORTCUT = shortcuts['6 JAPANESE_SHORTCUT']
+
+
+############Batach Kotonoha#################
+
+
+def _get_word_b(note):
+    Keys = list(note.keys())
+    word = note[Keys[0]]
+    # use the first line
+    word = word.split('<br>')[0]
+    word = clean_html(word).strip()
+
+    if str.isascii(word):
+        return word
+    else:
+        tooltip("Kotonoha has detected a word with non-ASCII characters, which it is unable to recognize. \
+        By default, Kotonoha detects all the text in the front note. \
+        When you select a part of the text, Kotonoha searches for its definition. \
+        To avoid errors, ensure that the text you select does not contain any non-ASCII characters.")
+        return ''
+
+def get_definition_b(editor, note,button='primary', overwrite=False):
+    validate_settings()
+    Keys=list(note.keys())
+    word = _get_word_b(note)
+
+    if word == "":
+        tooltip("Kotonoha: No text found in note fields.")
+        return
+    valid_dic_name=[]
+    valid_entries = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name,button=button)
+
+    # Add Vocal Pronunciation
+    if PRONUNCIATION_FIELD > -1:
+        # Parse all unique pronunciations, and convert them to URLs as per http://goo.gl/nL0vte
+        all_sounds = []
+
+        for e in valid_entries:
+            if json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                if 'fl' in e:
+                    FL = (_abbreviate_fl(e['fl']))
+                else:
+                    FL = ''
+                for prs in json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                    if (not json_extract_dict(prs, 'ipa') and not json_extract_dict(prs, 'mw')) or not json_extract_dict(prs, 'audio'):
+                        continue
+                    else:
+                        if json_extract_dict(prs, key='ipa'):
+                            phoneme=json_extract_dict(prs, key='ipa')[0]
+                        else:
+                            phoneme = json_extract_dict(prs, key='mw')[0]
+                        audio = json_extract_dict(prs, key='audio')[0]
+                        # select audio includes the first 3 letters of the word
+                        # to remove unrelated sound files
+                        if word[:3] in audio:
+                            if audio[:3] == "bix":
+                                subdir = "bix"
+                            elif audio[:2] == "gg":
+                                subdir = "gg"
+                            elif audio[:1].isdigit():
+                                subdir = "number"
+                            else:
+                                subdir = audio[:1]
+                            mp3_url = 'https://media.merriam-webster.com/audio/prons/en/us/mp3/' + subdir + '/' + \
+                                      audio + '.mp3'
+                            all_sounds.append(FL + ' [' + phoneme + '] ' + editor.urlToLink(mp3_url).strip())
+            else:
+                continue
+        # We want to make this a non-duplicate list, so that we only get unique sound files.
+        all_sounds = list(dict.fromkeys(all_sounds))
+        if overwrite:
+            note[Keys[0]]=word+'<br>'+'<br>'.join(all_sounds)
+        else:
+            note[Keys[0]]+='<br>'+'<br>'.join(all_sounds)
+    # Add Definition json
+
+    if DEFINITION_FIELD > -1:
+        check_response = all(isinstance(element, str) for element in valid_entries)
+        if check_response:
+            tooltip('Possible words are: '+','.join(valid_entries))
+            def_list = []
+        else:
+            fl_list = []
+            for entry in valid_entries:
+                if 'fl' not in entry:
+                    continue
+                fl = entry['fl']
+                fl_list.append(fl)
+            # unique fl list
+            fl_list = list(set(fl_list))
+            # group by fl
+            grouped = {}
+            for x in fl_list:
+                grouped[x] = []
+            for e in valid_entries:
+                if 'fl' in e:
+                    category=e['fl']
+                    grouped[category].append(e)
+
+            # add inflection
+            dic_list = []
+            for e in valid_entries:
+                if 'ins' in e:
+                    category = (_abbreviate_fl(e['fl']))
+                    dic_list.append(category + 'inf: ' + ', '.join(json_extract_dict(obj=e, key='if')))
+            # add cross-references
+            for e in valid_entries:
+                if 'cxs' in e:
+                    dic_list.append(
+                        json_extract_dict(obj=e, key='cxl')[0] + ' ' + json_extract_dict(obj=e, key='cxt')[0])
+            dic_list = list(set(dic_list))
+            Dic_html = '<div class ="dic_box" >' + \
+                       '<span class ="box-title">' + '@' + ''.join(valid_dic_name) + '</span>' + \
+                       '<p>' + '<br>'.join(dic_list) + '</p>' + \
+                       '</div>'
+            def_list = [Dic_html]
+
+            # add shortdef, example, thesaurus
+            for FL in fl_list:
+                g = grouped[FL]
+                for i in range(len(g)):
+                    entry = g[i]
+                    if len(json_extract_dict(obj=entry, key='shortdef')) > 0:
+                        for j in range(len(json_extract_dict(obj=entry, key='shortdef')[0])):
+                            shortdef = json_extract_dict(obj=entry, key='shortdef')[0][j]
+                            sseq = json_extract_dict(obj=entry, key='sseq')[0]
+                            if len(sseq) > j:
+                                vis = json_extract_dict(obj=sseq[j], key='t')  # as list
+                            else:
+                                vis = []
+                            if BOX_FORMAT:
+                                if len(vis) > 0:
+                                    txt = re.sub("\{..\}", "<span class=\"text_highlight\">", vis[0])
+                                    Vis = re.sub("\{...\}", "</span>",txt)
+                                    Vis_html = '<div class ="vis_box" >' + \
+                                               '<span class ="box-title"> Example </span>' + \
+                                               '<p>' + Vis + '</p>' + \
+                                               '</div>'
+                                else:
+                                    Vis_html=''
+
+                                Def_html = '<div class ="def_box" >' + \
+                                           '<span class ="box-title">' + FL + ' ' + str(i + 1) + '-' + str(
+                                    j + 1) + '</span>' + \
+                                           '<p>' + shortdef + '</p>' + \
+                                           '</div>' + \
+                                           Vis_html
+
+                                def_list.append(Def_html)
+
+                            else:
+                                def_list.append(FL + ' ' + str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
+                                if len(vis) > 0:
+                                    def_list.append(
+                                        '(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+                    if BOX_FORMAT:
+                        Syns = json_extract_dict(obj=json_extract_dict(obj=entry, key='syns'),
+                                                 key='pt')  # as list
+                        Ants = json_extract_dict(obj=json_extract_dict(obj=entry, key='ants'),
+                                                 key='pt')  # as list
+                        if len(Syns) > 0:
+                            Syn = Syns[0][0][1].split('.')[0].strip().replace("{sc}",
+                                                                              "<span class=\"text_highlight\">").replace(
+                                "{/sc}", "</span>,")
+                            Syn_html = '<div class ="syn_box" >' + \
+                                       '<span class ="box-title"> Synonym </span>' + \
+                                       '<p>' + Syn + '</p>' + \
+                                       '</div>'
+                        else:
+                            Syn_html = ''
+                        def_list.append(Syn_html)
+                    else:
+                        if len(Syns) > 0:
+                            Syn = Syns[0][0][1].split('.')[0].strip()
+                            def_list.append(Syn)
+    if JAPANESE_FIELD > -1:
+        if not def_list:
+            def_list=[]
+        response = requests.get('https://ejje.weblio.jp/content/' + urllib.parse.quote_plus(word))
+        soup = BeautifulSoup(response.text, 'html.parser')
+        if not soup.find(class_='content-explanation ej'):
+            tooltip("No Japanese definition was found. Check the word!")
+            return
+        else:
+            japanese = soup.find(class_='content-explanation ej').get_text().strip()
+            Jap_html = '<div class ="jap_box" >' + \
+                       '<span class ="box-title"> Japanese </span>' + \
+                       '<p>' + japanese + '</p>' + \
+                       '</div>'
+            def_list.append(Jap_html)
+    if DEFINITION_FIELD > -1 or JAPANESE_FIELD > -1:
+        if overwrite:
+            # extract img html tag
+            html_text = note[Keys[1]]
+            # Create a Parse Tree object using BeautifulSoup()
+            soup = BeautifulSoup(html_text, 'html.parser')
+            # Extract all <img> tags in the HTML document
+            img_tags = soup.find_all('img')
+            for img_tag in img_tags:
+                def_list.append(str(img_tag))
+            note[Keys[1]] = '<br>'.join(def_list)
+
+
+        else:
+            note[Keys[1]] += '<br>'.join(def_list)
+
+
+def get_thesaurus_b(editor, note):
+    validate_settings()
+    Keys = list(note.keys())
+    word = _get_word_b(note)
+    if word == "":
+        tooltip("Kotonoha: No text found in note fields.")
+        return
+    valid_dic_name=[]
+    button='thesaurus'
+    valid_entries = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name,button=button)
+    valid_dic_name_sound = []
+    valid_entries_sound = get_preferred_valid_entries_j(word, valid_dic_name=valid_dic_name_sound,
+                                                        button='primary')
+
+    # Add Vocal Pronunciation
+    if PRONUNCIATION_FIELD > -1:
+        # Parse all unique pronunciations, and convert them to URLs as per http://goo.gl/nL0vte
+        all_sounds = []
+
+        for e in valid_entries_sound:
+            if json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                if 'fl' in e:
+                    FL = (_abbreviate_fl(e['fl']))
+                else:
+                    FL = ''
+                for prs in json_extract_dict(obj=json_extract_dict(obj=e, key='hwi'), key='prs'):
+                    if (not json_extract_dict(prs, 'ipa') and not json_extract_dict(prs,
+                                                                                    'mw')) or not json_extract_dict(prs,
+                                                                                                                    'audio'):
+                        continue
+                    else:
+                        if json_extract_dict(prs, key='ipa'):
+                            phoneme = json_extract_dict(prs, key='ipa')[0]
+                        else:
+                            phoneme = json_extract_dict(prs, key='mw')[0]
+                        audio = json_extract_dict(prs, key='audio')[0]
+                        # select audio includes the first 3 letters of the word
+                        # to remove unrelated sound files
+                        if word[:3] in audio:
+                            if audio[:3] == "bix":
+                                subdir = "bix"
+                            elif audio[:2] == "gg":
+                                subdir = "gg"
+                            elif audio[:1].isdigit():
+                                subdir = "number"
+                            else:
+                                subdir = audio[:1]
+                            mp3_url = 'https://media.merriam-webster.com/audio/prons/en/us/mp3/' + subdir + '/' + \
+                                      audio + '.mp3'
+                            all_sounds.append(FL + ' [' + phoneme + '] ' + editor.urlToLink(mp3_url).strip())
+            else:
+                continue
+        # We want to make this a non-duplicate list, so that we only get unique sound files.
+        all_sounds = list(dict.fromkeys(all_sounds))
+        note[Keys[0]] += '<br>' + '<br>'.join(all_sounds)
+
+    # Add Definition json
+
+    if DEFINITION_FIELD > -1:
+        check_response = all(isinstance(element, str) for element in valid_entries)
+        if check_response:
+            tooltip('Possible words are: ' + ','.join(valid_entries))
+            def_list = []
+        else:
+            fl_list = []
+            for entry in valid_entries:
+                if 'fl' not in entry:
+                    continue
+                fl = entry['fl']
+                fl_list.append(fl)
+            # unique fl list
+            fl_list = list(set(fl_list))
+            # group by fl
+            grouped = {}
+            for x in fl_list:
+                grouped[x] = []
+            for e in valid_entries:
+                if 'fl' in e:
+                    category = e['fl']
+                    grouped[category].append(e)
+
+            # add inflection
+            dic_list = []
+            for e in valid_entries:
+                if 'ins' in e:
+                    category = (_abbreviate_fl(e['fl']))
+                    dic_list.append(category + 'inf: ' + ', '.join(json_extract_dict(obj=e, key='if')))
+            # add cross-references
+            for e in valid_entries:
+                if 'cxs' in e:
+                    dic_list.append(
+                        json_extract_dict(obj=e, key='cxl')[0] + ' ' + json_extract_dict(obj=e, key='cxt')[0])
+            dic_list = list(set(dic_list))
+            Dic_html = '<div class ="dic_box" >' + \
+                       '<span class ="box-title">' + '@' + ''.join(valid_dic_name) + '</span>' + \
+                       '<p>' + '<br>'.join(dic_list) + '</p>' + \
+                       '</div>'
+            def_list = [Dic_html]
+
+            # add shortdef, example, thesaurus
+            for FL in fl_list:
+                g = grouped[FL]
+                for i in range(len(g)):
+                    entry = g[i]
+                    if len(json_extract_dict(obj=entry, key='shortdef')) > 0:
+                        for j in range(len(json_extract_dict(obj=entry, key='shortdef')[0])):
+                            shortdef = json_extract_dict(obj=entry, key='shortdef')[0][j]
+                            sseq = json_extract_dict(obj=entry, key='sseq')[0]
+                            if len(sseq)>j:
+                                vis = json_extract_dict(obj=sseq[j], key='t')  # as list
+                                syn_list = json_extract_dict(obj=json_extract_dict(obj=sseq[j], key='syn_list'),
+                                                             key='wd')  # as list
+                                ant_list = json_extract_dict(obj=json_extract_dict(obj=sseq[j], key='ant_list'),
+                                                             key='wd')  # as list
+                            else:
+                                vis=[]
+                                syn_list=[]
+                                ant_list=[]
+                            if BOX_FORMAT:
+                                if len(vis) > 0:
+                                    txt = re.sub("\{..\}", "<span class=\"text_highlight\">", vis[0])
+                                    Vis = re.sub("\{...\}", "</span>",txt)
+                                    Vis_html='<div class ="vis_box" >' +\
+                                             '<span class ="box-title"> Example </span>' +\
+                                             '<p>'+ Vis + '</p>' +\
+                                             '</div>'
+
+                                if len(syn_list) > 0:
+                                    Syn=', '.join(syn_list)
+                                    Syn_html='<div class ="syn_box" >' +\
+                                             '<span class ="box-title"> Synonym </span>' +\
+                                             '<p>'+ Syn + '</p>' +\
+                                             '</div>'
+                                else:
+                                    Syn_html = ''
+                                if len(ant_list) > 0:
+                                    Ant = ', '.join(ant_list)
+                                    Ant_html='<div class ="ant_box" >' +\
+                                             '<span class ="box-title"> Antonym </span>' +\
+                                             '<p>'+ Ant + '</p>' +\
+                                             '</div>'
+                                else:
+                                    Ant_html=''
+                                Def_html = '<div class ="def_box" >' + \
+                                           '<span class ="box-title">'+ FL+' '+str(i + 1) + '-' + str(j + 1) +'</span>' + \
+                                           '<p>' + shortdef + '</p>' + \
+                                           '</div>' + \
+                                           Vis_html + \
+                                           Syn_html + \
+                                           Ant_html
+
+                                def_list.append(Def_html)
+
+                            else:
+                                def_list.append(FL+' '+str(i + 1) + '-' + str(j + 1) + '. ' + shortdef)
+                                if len(vis) > 0:
+                                    def_list.append('(Example) ' + re.sub(pattern=r"{[^}]*}", repl='', string=vis[0]))
+                                if len(syn_list) > 0:
+                                    def_list.append('(Synonym) ' + ', '.join(syn_list))
+                                if len(ant_list) > 0:
+                                    def_list.append('(Antonym) ' + ', '.join(ant_list))
+    if JAPANESE_FIELD > -1:
+        if not def_list:
+            def_list = []
+        response = requests.get('https://ejje.weblio.jp/content/' + urllib.parse.quote_plus(word))
+        soup = BeautifulSoup(response.text, 'html.parser')
+        if not soup.find(class_='content-explanation ej'):
+            tooltip("No Japanese definition was found. Check the word!")
+            return
+        else:
+            japanese = soup.find(class_='content-explanation ej').get_text().strip()
+            Jap_html = '<div class ="jap_box" >' + \
+                       '<span class ="box-title"> Japanese </span>' + \
+                       '<p>' + japanese + '</p>' + \
+                       '</div>'
+            def_list.append(Jap_html)
+    if DEFINITION_FIELD > -1 or JAPANESE_FIELD > -1:
+        note[Keys[1]] += '<br>'.join(def_list)
+

@@ -9,6 +9,8 @@
     "OPEN_IMAGES_IN_BROWSER": true,
     "ADDITIONAL_SEARCH_WORD": "",
     "PRONUNCIATION_FIELD": 0,
+    "ART_FIELD": 1,
+    "BOX_FORMAT": false,
     "SECONDARY_DICT": "",
     "SECONDARY_API_KEY": "YOUR_KEY_HERE",
     "TERTIARY_DICT": "",
@@ -22,7 +24,7 @@
     "1 PRIMARY_SHORTCUT": "ctrl+shift+f",
     "2 SECONDARY_SHORTCUT": "ctrl+shift+d",
     "3 TERTIARY_SHORTCUT": "ctrl+shift+s",
-    "4 TERTIARY_SHORTCUT": "ctrl+shift+s",
+    "4 QUATERNARY_SHORTCUT": "ctrl+shift+s",
     "5 THESAURUS_SHORTCUT": "ctrl+shift+e",
     "6 JAPANESE_SHORTCUT": "ctrl+shift+w"
   }

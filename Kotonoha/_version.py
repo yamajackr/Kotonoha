@@ -30,14 +30,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 """
-Module-level entry point for the add-on into Anki 2.0/2.1
+Version information
 """
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-
-from ._version import __version__  # noqa: F401
-
-from . import batch_kotonoha  # noqa: F401
-
-from . import kotonoha
+__version__ = "0.5.0"

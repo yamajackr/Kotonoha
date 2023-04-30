@@ -3,6 +3,7 @@
 * `DEFINITION_FIELD`: Index of field to insert definitions into (use -1 to turn off)
 * `OPEN_IMAGES_IN_BROWSER`: Open a browser tab with an image search for the same word?
 * `ADDITIONAL_SEARCH_WORD`: Additional word in image search
+* `BOX_FORMAT`: Put elements in boxes? If True, set the format using the styling options provided in the cards template.
 * `PRONUNCIATION_FIELD`: Index of field to insert pronunciations into (use -1 to turn off)
 * `SECONDARY_DICT`: Choose a dictionary from "COLLEGIATE", "LEARNERS", "ELEMENTARY", or "MEDICAL"   
 * `SECONDARY_API_KEY`: Get your unique API key by signing up at [dictionaryapi.com](http://www.dictionaryapi.com/)

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Kotonoha Add-on for Anki
+# Batch Editing Add-on for Anki
 #
-# <https://github.com/yamajackr>
+# Copyright (C) 2016-2019  Aristotelis P. <https://glutanimate.com/>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,14 +30,12 @@
 # Any modifications to this file must keep this entire header intact.
 
 """
-Module-level entry point for the add-on into Anki 2.0/2.1
+Package that bundles UI components used by the add-on
+(e.g. dialogs, Qt forms, other resources)
 """
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-
-from ._version import __version__  # noqa: F401
-
-from . import batch_kotonoha  # noqa: F401
-
-from . import kotonoha
+def initializeQtResources():
+    """
+    Load Qt resources into memory
+    """
+    from . import resources  # noqa: F401
