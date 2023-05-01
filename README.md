@@ -10,7 +10,9 @@ Tested on Anki 2.1.47, 2.1.52, and 2.1.60 (doesn't work <= 2.1.44)
 
 ## How to use
 First, set up the add-on's configuration settings. This requires entering your primary dictionary and API key for that dictionary. You can also choose to include additional dictionaries if you wish.
+The other available options include adding an additional search word for image search, specifying fields for inserting definitions, pronunciations, artwork and Japanese definitions, enabling/disabling opening a browser tab with an image search for the same word, setting keyboard shortcuts for running the tool.
 
+<img align="left" src="Kotonoha/images/Kotonoha_sample2.png" width="350" height="350">
 
 <img align="right" src="Kotonoha/images/Kotonoha_sample2.png" width="350" height="350">
 
