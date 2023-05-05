@@ -1,6 +1,6 @@
 Kotonoha Anki Add-On
 ==========
-<img align="right" src="Kotonoha/images/leaf_green.png" width="372" height="256">
+<img align="right" src="Kotonoha/images/leaf_green.png" width="300" height="200">
 
 Kotonoha is an Anki add-on that automatically adds **`pronunciation, definition, synonyms, Japanese translation`**, and other relevant info to words in the Anki card. It simplifies the process of creating flashcards, freeing up users' time to focus on learning rather than searching for definitions and pronunciations. With Kotonoha, users can easily improve their vocabulary and language skills without the hassle of tedious research.
 
