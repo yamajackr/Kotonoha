@@ -21,7 +21,7 @@ The other available options include adding an additional search word for image s
 Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
 
 **Note:**
-If you're using Kotonoha, you can format your word definitions, example sentences, and synonyms in a box using CSS styling. To achieve a card format like the one shown in the image on the right, navigate to **`Add -> Cards... -> Template and Styling.`** For reference, I keep my template example in the Kotonoha directory.
+You can format your word definitions, example sentences, and synonyms in a box using CSS styling. To achieve a card format like the one shown in the image on the right, navigate to **`Add -> Cards... -> Template and Styling.`** For reference, I keep my template example in the Kotonoha directory.
 
 
 [How to use Kotonoha 1](https://youtu.be/SCxYdC3GtGs "How to use Kotonoha")
