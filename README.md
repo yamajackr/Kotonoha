@@ -12,18 +12,22 @@ Furthermore, the add-on employs the English-Japanese dictionary provided by [Web
 It also features various modes such as 'Cloze Sentence' and 'DeepL' designed to help create effective cloze sentence flashcards. For the 'DeepL' mode, you'll need to secure a unique API key from the [DeepL API](https://www.deepl.com/pro/change-plan#developer). As of May 30, 2023, they offer a free plan for API usage.
 
 
-## How to use
+## How to use (Configuration)
 First, set up the add-on's configuration settings. This requires entering your API key for Merriam-Webster dictionary. You can also choose to include additional dictionaries if you wish.
-The other available options include adding an additional search word for image search, specifying fields for inserting definitions, pronunciations, artwork and Japanese definitions, enabling/disabling opening a browser tab with an image search for the same word, setting keyboard shortcuts for running the tool. You can also control those setting via dialog that appears when you pressing the button of 
+The other available options include adding an additional search word for image search, specifying fields for inserting definitions, pronunciations, artwork and Japanese definitions, enabling/disabling opening a browser tab with an image search for the same word, setting keyboard shortcuts for running the tool. You can adjust these settings through a dialog box that pops up when you click the green leaf button, or directly in the add-on's configuration settings.
+
+<img align="left" src="Kotonoha/images/Edigor.png" width="450" height="500">
+<img align="right" src="Kotonoha/images/Dialog_config.png" width="510" height="500">
 
 
-<img align="right" src="Kotonoha/images/Dialog_config.png" width="350" height="350">
+## How to use (Output)
 
+
+After setting up the add-on, you can easily search for word pronunciations and definitions. Just click the start button in the Kotonoha Dialog window. Choose the word you're curious about (or default to the first line of the card's source field), and watch as the add-on automatically fetches and displays all the relevant information.
 <img align="right" src="Kotonoha/images/design_explanation.png" width="350" height="350">
 
-Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
 
-**Note:**
+## **Note:**
 You can format your word definitions, example sentences, and synonyms in a box using CSS styling. To achieve a card format like the one shown in the image on the right, navigate to **`Add -> Cards... -> Template and Styling.`** For reference, I keep my template example in the Kotonoha directory.
 
 
@@ -31,7 +35,7 @@ You can format your word definitions, example sentences, and synonyms in a box u
 
 [How to use Kotonoha for Medicine](https://www.youtube.com/watch?v=YEG3kYFnLKk "How to use Kotonoha")
 
-To use Batch Kotonoha, which allows you to run Kotonoha for multiple cards at once, start by selecting the cards you want to modify in the browse window. Then, **`Edit -> Batch Kotonoha...`**. If you want to add new information to each card, simply leave the 'Overwrite' option unchecked. However, if you want to replace the old note with the new one, select 'Overwrite' before clicking on Batch Kotonoha.
+To use Kotonoha for multiple cards simultaneously, first select the cards you'd like to modify in the browser window. Then, go to **`Edit -> Kotonoha Dialog...` from the dropdown menu, or simply use the designated short cut key)**. 
 
 [How to use Batch Kotonoha](https://youtu.be/mV1GjX9Img8 "How to use Kotonoha")
 
