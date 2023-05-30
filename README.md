@@ -37,7 +37,7 @@ To use Kotonoha for multiple cards simultaneously, first select the cards you'd 
 
 [How to use Kotonoha (Multiple cards)](https://youtu.be/xrcOHmuj-Rc "How to use Kotonoha")
 
-[How to use Kotonoha (Cloze sentence mode)](https://youtu.be/mV1GjX9Img8 "How to use Kotonoha")
+[How to use Kotonoha (Cloze sentence mode)](https://youtu.be/PZi7rx1YC9w "How to use Kotonoha")
 
 
 
