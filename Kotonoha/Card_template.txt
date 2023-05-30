@@ -1,0 +1,225 @@
+Front Template:
+
+<div class="main_box">
+    <p>{{Front}}</p>
+</div>
+
+
+Back Template:
+
+{{FrontSide}}
+
+<hr id=answer>
+
+<div class="main_box">
+    <p>{{Back}}</p>
+</div>
+
+
+
+
+Styling:
+.card {
+ font-family: arial;
+ font-size: 30px;
+ text-align: left;
+ color: ;
+ background-color: ;
+}
+
+.cloze {
+ font-weight: bold;
+ color: #00b7cc;
+}
+.nightMode .cloze {
+ color: ##00b7cc;
+}
+
+.front_box{
+    padding: 0.5em 0.5em;
+    margin: 2em 0;
+    color: ;
+    background: ;
+    font-size: 30px;
+    border-left: double 7px #005f81;
+    border-right: double 7px #005f81;
+}
+.front_box p {
+    margin: 1em; 
+    padding: 0;
+}
+.main_box{
+    padding: 0.5em 0.5em;
+    margin: 2em 0;
+    color: ;
+    background: ;
+    border-left: double 7px #005f81;
+    border-right: double 7px #005f81;
+}
+.main_box p {
+    margin: 1em; 
+    padding: 0;
+}
+
+.dic_box {
+    position: relative;
+    margin: 0.1em 0;
+    padding: 25px 10px 7px;
+}
+.dic_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #005f81; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.dic_box p {
+    margin: 0; 
+    padding: 0;
+}
+.def_box {
+    position: relative;
+    margin: 0.1em 0;
+    padding: 25px 10px 7px;
+}
+.def_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #00b7cc; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.def_box p {
+    margin: 0; 
+    padding: 0;
+}
+.vis_box {
+    position: relative;
+    margin: 0.1em 0;
+    padding: 25px 10px 7px;
+}
+.vis_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #005f81; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.vis_box p {
+    margin: 0; 
+    padding: 0;
+}
+
+.syn_box {
+    position: relative;
+    margin: 0.1em 0;
+    padding: 25px 10px 7px;
+}
+.syn_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #00b7cc; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.syn_box p {
+    margin: 0; 
+    padding: 0;
+}
+
+.ant_box {
+    position: relative;
+    margin: 0.1em 0;
+    padding: 25px 10px 7px;
+}
+.ant_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #ff6fa9; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.ant_box p {
+    margin: 0; 
+    padding: 0;
+}
+.jap_box {
+    position: relative;
+    margin: 0.1em 0;
+    padding: 25px 10px 7px;
+}
+.jap_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #a10532; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.jap_box p {
+    margin: 0; 
+    padding: 0;
+}
+
+.poke_box {
+    position: relative;
+    margin: 0.em 0;
+    padding: px px px;
+}
+.poke_box .box-title {
+    position: relative;
+    display: inline-block;
+    top: -2px;
+    left: -2px;
+    padding: 0 9px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 30px;
+    background: #005f81; /*box colour*/
+    color: white;
+    font-weight: bold;
+}
+.poke_box p {
+    margin: 0; 
+    padding: 0;
+}
+
+.text_highlight {
+        color: #00b7cc;
+}
+

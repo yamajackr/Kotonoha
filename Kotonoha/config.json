@@ -1,0 +1,33 @@
+{
+  "BOX_FORMAT": true, 
+  "shortcuts": {"DIALOG_SHORTCUT": "ctrl+shift+d","BROWSER_SHORTCUT": "ctrl+alt+b"}, 
+  "Source Language": "Any language (detect)", "Target Language": "Japanese", 
+  "Overwrite": true, "Strip HTML": true, 
+  "API keys": {
+    "DeepL API Key": "YOUR_KEY_HERE", 
+    "LEARNERS_API_KEY": "YOUR_KEY_HERE", 
+    "ELEMENTARY_API_KEY": "YOUR_KEY_HERE", 
+    "COLLEGIATE_API_KEY": "YOUR_KEY_HERE", 
+    "THESAURUS_API_KEY": "YOUR_KEY_HERE",
+    "MEDICAL_API_KEY": "YOUR_KEY_HERE"}, 
+  "Mode": "Default", 
+  "Open Web Browser": false, 
+  "Additional Search Word": "", 
+  "Dictionary": "LEARNERS", 
+  "Dialog Image Path": "leaf_green.png", 
+  "Fields": {
+    "Pronunciation Field": "Front", 
+    "Definition Field": "Back", 
+    "Japanese Field": "Back", 
+    "Source Field": "Front", 
+    "DeepL Field": "Back", 
+    "Target Field": "Back", 
+    "Image Field": "Image", 
+    "Dictionary Field": "Back"}, 
+  "Dictionaries": {
+    "PRIMARY": "LEARNERS", 
+    "SECONDARY": "ELEMENTARY", 
+    "TERTIARY": "COLLEGIATE", 
+    "QUATERNARY": "MEDICAL", 
+    "THESAURUS": "COLLEGIATE_THESAURUS"}
+}
