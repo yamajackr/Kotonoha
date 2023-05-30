@@ -1,5 +1,0 @@
-Kotonoha is an Anki add-on that automatically adds pronunciation, definition, synonyms, Japanese translation, and other relevant info to words in the Anki card. It simplifies the process of creating flashcards, freeing up users' time to focus on learning rather than searching for definitions and pronunciations. With Kotonoha, users can easily improve their vocabulary and language skills without the hassle of tedious research.
-
-Please refer to https://github.com/yamajackr/Kotonoha to get the detailed explanation.
-
-Note: This add-on uses Merriam-Webster's Collegiate®, Collegiate® thesaurus, Medical, Learner's, intermediate thesaurus and Elementary Dictionary with Audio API to get definitions and pronunciations. This requires you sign up for a Merriam-Webster account and use your own individual API access key. Go to the Merriam-Webster Dictionary API website, sign up for an account, and request access to the dictionaries. Then, replace YOUR_KEY_HERE with the key you receive. You can add up to three dictionaries. Also, the add-on references the English-Japanese dictionary provided by Weblio.
