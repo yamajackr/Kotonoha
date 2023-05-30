@@ -43,7 +43,7 @@ To use Kotonoha for multiple cards simultaneously, first select the cards you'd 
 
 
 ## Acknowledgement
-I would like to express my gratitude to the developer of the Anki add-on [AutoDefine](https://github.com/z1lc/AutoDefine), which inspired the creation of this tool.
+I would like to express my gratitude to the developer of the Anki add-on [AutoDefine](https://github.com/z1lc/AutoDefine), [DeepL Translator](https://ankiweb.net/shared/info/972129549), which inspired the creation of this tool.
 
 ## License & Credits
 Icon made by [WordArt](https://wordart.com/)
