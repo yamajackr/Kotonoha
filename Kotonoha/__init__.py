@@ -38,6 +38,4 @@ from __future__ import (absolute_import, division,
 
 from ._version import __version__  # noqa: F401
 
-from . import batch_kotonoha  # noqa: F401
-
-from . import kotonoha
+from . import kotonoha_dialog
