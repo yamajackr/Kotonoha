@@ -17,7 +17,7 @@ First, set up the add-on's configuration settings. This requires entering your A
 The other available options include adding an additional search word for image search, specifying fields for inserting definitions, pronunciations, artwork and Japanese definitions, enabling/disabling opening a browser tab with an image search for the same word, setting keyboard shortcuts for running the tool. You can adjust these settings through a dialog box that pops up when you click the green leaf button, or directly in the add-on's configuration settings.
 
 <img align="left" src="Kotonoha/images/Editor.png" width="450" height="500">
-<img align="right" src="Kotonoha/images/Dialog_config.png" width="510" height="500">
+<img align="left" src="Kotonoha/images/Dialog_config.png" width="510" height="500">
 
 
 ## How to use (Output)
