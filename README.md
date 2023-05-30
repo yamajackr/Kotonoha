@@ -13,12 +13,13 @@ It also features various modes such as 'Cloze Sentence' and 'DeepL' designed to 
 
 
 ## How to use
-First, set up the add-on's configuration settings. This requires entering your primary dictionary and API key for that dictionary. You can also choose to include additional dictionaries if you wish.
-The other available options include adding an additional search word for image search, specifying fields for inserting definitions, pronunciations, artwork and Japanese definitions, enabling/disabling opening a browser tab with an image search for the same word, setting keyboard shortcuts for running the tool.
+First, set up the add-on's configuration settings. This requires entering your API key for Merriam-Webster dictionary. You can also choose to include additional dictionaries if you wish.
+The other available options include adding an additional search word for image search, specifying fields for inserting definitions, pronunciations, artwork and Japanese definitions, enabling/disabling opening a browser tab with an image search for the same word, setting keyboard shortcuts for running the tool. You can also control those setting via dialog that appears when you pressing the button of 
 
-<img align="left" src="Kotonoha/images/Config.png" width="1000" height="400">
 
-<img align="right" src="Kotonoha/images/Kotonoha_sample2.png" width="350" height="350">
+<img align="right" src="Kotonoha/images/Dialog_config.png" width="350" height="350">
+
+<img align="right" src="Kotonoha/images/design_explanation.png" width="350" height="350">
 
 Once the add-on is configured, you can use it to search for the pronunciation and definitions of a word by pressing the button in the flashcard creation window. Simply select the word you want to look up (or use all the text on the front of the card), and the add-on will automatically search for and display the information you need.
 
