@@ -7,7 +7,9 @@ Kotonoha is an Anki add-on that automatically adds **`pronunciation, definition,
 Tested on Anki 2.1.47, 2.1.52, and 2.1.60 (doesn't work <= 2.1.44) 
 
 **Note:** This add-on uses Merriam-Webster's Collegiate®, Collegiate® thesaurus, Medical, Learner's, intermediate thesaurus and Elementary Dictionary with Audio API to get definitions and pronunciations. This requires you sign up for a Merriam-Webster account and use your own individual API access key. 
-<img align="right" src="Kotonoha/images/Get_API_key.png" width="350" height="300"> Go to the [Merriam-Webster Dictionary API website](http://www.dictionaryapi.com/register/index), sign up for an account, and request access to the dictionaries. Then, replace **`YOUR_KEY_HERE`** with the key you receive. You can add up to three dictionaries. Also, the add-on references the English-Japanese dictionary provided by [Weblio](https://ejje.weblio.jp/).
+<img align="right" src="Kotonoha/images/Get_API_key.png" width="350" height="300"> Go to the [Merriam-Webster Dictionary API website](http://www.dictionaryapi.com/register/index), sign up for an account, and request access to the dictionaries. Then, replace **`YOUR_KEY_HERE`** with the key you receive. You can add up to three dictionaries.
+Furthermore, the add-on employs the English-Japanese dictionary provided by [Weblio](https://ejje.weblio.jp/).
+It also features various modes such as 'Cloze Sentence' and 'DeepL' designed to help create effective cloze sentence flashcards. For the 'DeepL' mode, you'll need to secure a unique API key from the [DeepL API](https://www.deepl.com/pro/change-plan#developer). As of May 30, 2023, they offer a free plan for API usage.
 
 
 ## How to use
