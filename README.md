@@ -20,9 +20,6 @@ The other available options include adding an additional search word for image s
     <img style="float: left; margin-right: 10px;" src="Kotonoha/images/Dialog_config.png" width="550" height="500">
 </div>
 
-## How to use (Output)
-
-
 After setting up the add-on, you can easily search for word pronunciations and definitions. Just click the start button in the Kotonoha Dialog window. Choose the word you're curious about (or default to the first line of the card's source field), and watch as the add-on automatically fetches and displays all the relevant information.
 
 
