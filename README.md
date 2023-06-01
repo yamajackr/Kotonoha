@@ -39,7 +39,8 @@ To use Kotonoha for multiple cards simultaneously, first select the cards you'd 
 [How to use Kotonoha (Cloze sentence mode)](https://youtu.be/PZi7rx1YC9w "How to use Kotonoha")
 
 
-
+## English learning for kids
+Enhance your child's education with engaging Pokemon quiz decks created using this Anki add-on. You can find the Pokemon quiz add-on at [Pokemon quiz](https://ankiweb.net/shared/info/1342621565). Simply install it to your Anki app and start enjoying interactive language learning with your child.
 
 ## Acknowledgement
 I would like to express my gratitude to the developer of the Anki add-on [AutoDefine](https://github.com/z1lc/AutoDefine), [DeepL Translator](https://ankiweb.net/shared/info/972129549), which inspired the creation of this tool.
