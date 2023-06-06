@@ -25,7 +25,7 @@ After setting up the add-on, you can easily search for word pronunciations and d
 [How to use Kotonoha (Default mode)](https://youtu.be/6Oqq8fuiO_k "How to use Kotonoha (Default mode)")
 
 
-## **Card format:**
+## Card format
 You can format your word definitions, example sentences, and synonyms in a box using CSS styling. To achieve a card format like the one shown in the image on the right, navigate to **`Add -> Cards... -> Template and Styling.`** For reference, I keep my template example in the Kotonoha directory.
 
 <div style="clear: both;">
@@ -33,10 +33,13 @@ You can format your word definitions, example sentences, and synonyms in a box u
 </div>
 
 
-To use Kotonoha for multiple cards simultaneously, first select the cards you'd like to modify in the browser window. Then, go to **`Edit -> Kotonoha Dialog...` from the dropdown menu, or simply use the designated short cut key)**. 
 
+
+## Run Kotonoha on multiple cards
+To use Kotonoha for multiple cards simultaneously, first select the cards you'd like to modify in the browser window. Then, go to **`Edit -> Kotonoha Dialog...` from the dropdown menu, or simply use the designated short cut key)**. 
 [How to use Kotonoha (Multiple cards)](https://youtu.be/xrcOHmuj-Rc "How to use Kotonoha")
 
+## Kotonoha Cloze sentence mode
 [How to use Kotonoha (Cloze sentence mode)](https://youtu.be/PZi7rx1YC9w "How to use Kotonoha")
 
 
